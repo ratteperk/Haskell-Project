@@ -10,6 +10,16 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 #endif /* MIN_VERSION_Haskell_Project */
+/* package GLUT-2.7.0.16 */
+#ifndef VERSION_GLUT
+#define VERSION_GLUT "2.7.0.16"
+#endif /* VERSION_GLUT */
+#ifndef MIN_VERSION_GLUT
+#define MIN_VERSION_GLUT(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  7 || \
+  (major1) == 2 && (major2) == 7 && (minor) <= 0)
+#endif /* MIN_VERSION_GLUT */
 /* package base-4.18.3.0 */
 #ifndef VERSION_base
 #define VERSION_base "4.18.3.0"

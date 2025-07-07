@@ -20,5 +20,6 @@ executable Haskell-Project
                      gloss >=1.13,
                      random >=1.2,
                      linear >=1.21,
-                     unordered-containers >=0.2.19
+                     unordered-containers >=0.2.19,
+                     GLUT >=2.7.0
     default-language: GHC2021
