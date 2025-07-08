@@ -1,5 +1,6 @@
 module GameState where
 
+import Config
 import Types
 
 initialState :: [[TileType]] -> GameState
@@ -7,7 +8,7 @@ initialState mapTiles = GameState
     { towers = []
     , enemies = []
     , projectiles = []
-    , coins = 100  -- Starting coins
+    , coins = initialCoins
     , buildMode = NotBuilding
     , tiles = mapTiles
     , gameOver = False

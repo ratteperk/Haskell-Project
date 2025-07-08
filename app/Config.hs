@@ -15,7 +15,7 @@ tileSize = 40.0
 
 -- Game balance constants
 initialCoins :: Int
-initialCoins = 100
+initialCoins = 200
 
 cannonTowerCost :: Int
 cannonTowerCost = 50

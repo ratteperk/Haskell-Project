@@ -8,17 +8,34 @@ import Types (startBuilding)
 import Data.List (find)
 import Graphics.Gloss.Data.Color (blue, orange)
 
+getTile :: [[TileType]] -> Int -> Int -> Maybe TileType
+getTile grid x y
+    | y < 0 || y >= length grid = Nothing
+    | x < 0 || x >= length row = Nothing
+    | otherwise = Just (row !! x)
+    where row = grid !! y
 
 canBuildHere :: Position -> GameState -> Bool
-canBuildHere (x, y) gs =
-    let tileX = floor (x / tileSize)
-        tileY = floor (y / tileSize)
-        tile = (tiles gs !! tileY) !! tileX
-        enoughCoins = case buildMode gs of
-            Building CannonTower -> coins gs >= cannonTowerCost
-            Building SlowTower -> coins gs >= slowTowerCost
-            _ -> False
-    in tile == Buildable && enoughCoins
+canBuildHere (x, y) gs = isBuildable && enoughCoins
+  where
+    tileX = floor (x / tileSize)
+    tileY = floor (y / tileSize)
+    tile = getTile (tiles gs) tileX tileY
+
+    isBuildable = case tile of
+        Nothing -> False
+        Just t -> t == Buildable
+
+    enoughCoins = case tile of
+        Nothing -> False
+        _ -> case buildMode gs of
+                Building CannonTower -> coins gs >= cannonTowerCost
+                Building SlowTower -> coins gs >= slowTowerCost
+                _ -> False
+
+tileCenterPosition :: (Int, Int) -> Position
+tileCenterPosition (tileX, tileY) =
+    (fromIntegral tileX * tileSize, fromIntegral tileY * tileSize)
 
 buildTower :: Position -> TowerType -> GameState -> GameState
 buildTower pos towerType gs = 
@@ -45,6 +62,10 @@ buildTower pos towerType gs =
         , buildMode = NotBuilding
         }
 
+mousePosToTile :: Position -> (Int, Int)
+mousePosToTile (x, y) = 
+    (floor (x / tileSize), floor (y / tileSize))
+
 -- Update the button handling
 handleInput :: Event -> GameState -> GameState
 handleInput event gs = case event of
@@ -52,13 +73,24 @@ handleInput event gs = case event of
         case buildMode gs of
             Building towerType -> 
                 if canBuildHere mousePos gs
-                then buildTower mousePos towerType gs
+                then tryBuildTower (tileCenterPosition (mousePosToTile mousePos)) towerType gs
                 else gs
             NotBuilding -> 
                 case getClickedButton mousePos gs of
                     Just button -> btnAction button gs
                     Nothing -> gs
     _ -> gs
+
+tryBuildTower :: Position -> TowerType -> GameState -> GameState
+tryBuildTower pos towerType gs = 
+    let isOccupied [] = False
+        isOccupied (tower:rest)
+            | towerPosition tower == pos = True
+            | otherwise = isOccupied rest
+    in case isOccupied (towers gs) of
+        True -> gs
+        _    -> buildTower pos towerType gs
+
 
 -- Update button creation to use record syntax
 getClickedButton :: Position -> GameState -> Maybe UIElement

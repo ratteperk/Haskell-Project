@@ -3,7 +3,6 @@ module Logic where
 import Types
 import Config
 import Pathfinding
--- Add these imports
 import Graphics.Gloss.Data.Vector (mulSV)
 import Data.List (find)
 
@@ -107,7 +106,7 @@ towersAttack delta gs = foldl (attackWithTower delta) gs (towers gs)
                     Just enemy -> 
                         let newProj = createProjectile tower enemy
                             newTower = tower { towerTimeSinceLastShot = 0 }
-                        in acc 
+                        in acc
                             { projectiles = newProj : projectiles acc
                             , towers = newTower : filter (/= tower) (towers acc)
                             }
