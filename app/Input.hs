@@ -89,7 +89,7 @@ tryBuildTower pos towerType gs =
             | otherwise = isOccupied rest
     in case isOccupied (towers gs) of
         True -> gs
-        _    -> buildTower pos towerType gs
+        _ -> buildTower pos towerType gs
 
 
 -- Update button creation to use record syntax

@@ -66,20 +66,20 @@ renderTowers = pictures . map renderTower
 renderEnemies :: [Enemy] -> Picture
 renderEnemies = pictures . map renderEnemy
     where
-        renderEnemy enemy =
-            let color = enemyColor (enemyType enemy)
-                size = 20  -- Enemy size
-                healthBarWidth = size
-                healthBarHeight = 5
-                healthPercent = enemyHealth enemy / 100  -- Assuming max health is 100
-            in pictures
-                [ translate x y $ colorRectangle color size size
-                , translate x (y - size/2 - healthBarHeight/2) $ 
-                    colorRectangle red healthBarWidth healthBarHeight  -- Background
-                , translate x (y - size/2 - healthBarHeight/2) $ 
-                    colorRectangle green (healthBarWidth * healthPercent) healthBarHeight  -- Health
-                ]
-            where (x, y) = enemyPosition enemy
+        renderEnemy enemy = pictures
+            [ translate x y $ color (enemyColor $ enemyType enemy) $ circleSolid 15  -- Enemy body
+            , translate x (y - 20) $ healthBar (enemyHealth enemy) (enemyMaxHealth enemy)
+            ]
+            where
+                (x, y) = enemyPosition enemy
+                
+                healthBar current max =
+                    let width = 30
+                        ratio = current / max
+                    in pictures
+                        [ color red $ rectangleWire width 5  -- Background
+                        , color green $ rectangleSolid (width * ratio) 5  -- Health
+                        ]
 
 renderUI :: GameState -> Picture
 renderUI gs = pictures

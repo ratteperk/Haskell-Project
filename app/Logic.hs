@@ -4,7 +4,7 @@ import Types
 import Config
 import Pathfinding
 import Graphics.Gloss.Data.Vector (mulSV)
-import Data.List (find)
+import Data.List (find, foldl')
 
 -- Add these helper functions
 distance :: Position -> Position -> Float
@@ -25,6 +25,40 @@ updateProjectiles delta = map updateProjectile
                     in proj { projPosition = (px + fst move, py + snd move) }
                 Nothing -> proj
 
+-- updateProjectiles' :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
+-- updateProjectiles' delta projectiles enemies = foldl' processProjectile (projectiles, enemies) projectiles
+--     where
+--         processProjectile (projs, ens) proj =
+--             case find (isHit proj) ens of
+--                 Nothing -> (proj:projs, ens)  -- Projectile missed
+--                 Just enemy -> 
+--                     let damagedEnemy = applyDamage proj enemy
+--                     in if enemyHealth damagedEnemy <= 0
+--                         then (projs, filter (/= enemy) ens)  -- Enemy died
+--                         else (projs, damagedEnemy : filter (/= enemy) ens)
+
+--         isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
+
+--         applyDamage proj enemy = enemy { enemyHealth = enemyHealth enemy - projDamage proj }
+
+updateProjectiles' :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
+updateProjectiles' _ [] enemies = ([], enemies)  -- Base case: no projectiles
+updateProjectiles' delta projectiles enemies =
+    foldl' processProjectile ([], enemies) projectiles
+    where
+        processProjectile (remainingProjs, currentEnemies) proj =
+            case find (isHit proj) currentEnemies of
+                Nothing -> (proj : remainingProjs, currentEnemies)  -- Miss
+                Just enemy ->
+                    let damagedEnemy = applyDamage proj enemy
+                    in if enemyHealth damagedEnemy <= 0
+                        then (remainingProjs, filter (/= enemy) currentEnemies)  -- Killed
+                        else (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies)  -- Damaged
+
+        isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
+
+        applyDamage proj enemy = enemy { enemyHealth = enemyHealth enemy - projDamage proj }
+
 spawnEnemies :: GameState -> GameState
 spawnEnemies gs
     | timeSinceLastWave gs > 5 && null (enemies gs) =
@@ -37,22 +71,48 @@ spawnEnemies gs
         createEnemy startPos = Enemy
             { enemyPosition = startPos
             , enemyType = BasicEnemy
-            , enemyHealth = 100
-            , enemySpeed = 50
+            , enemyHealth = basicEnemyHealth
+            , enemyMaxHealth = basicEnemyHealth
+            , enemyValue = basicEnemyValue
+            , enemySpeed = basicEnemySpeed
             , enemyPath = getEnemyPath (tiles gs)
             , enemyCurrentTarget = 0
             }
 
 -- Update the foldl in updateGame to use function application
 -- Remove one of these duplicate declarations
+-- updateGame :: Float -> GameState -> GameState
+-- updateGame delta gs 
+--     | gameOver gs = gs
+--     | otherwise = foldl (\acc f -> f acc) updatedGS updates
+--     where
+--         updatedGS = gs
+--             { enemies = updateEnemies delta (enemies gs)
+--             , projectiles = updateProjectiles delta (projectiles gs)
+--             , timeSinceLastWave = timeSinceLastWave gs + delta
+--             }
+--         updates = 
+--             [ spawnEnemies
+--             , \s -> towersAttack delta s
+--             , checkGameOver
+--             ]
+
 updateGame :: Float -> GameState -> GameState
 updateGame delta gs 
     | gameOver gs = gs
     | otherwise = foldl (\acc f -> f acc) updatedGS updates
     where
+        -- Update projectiles and enemies with collision
+        (remainingProjectiles, updatedEnemies) = updateProjectiles' delta (projectiles gs) (enemies gs)
+        
+        -- Add coins for killed enemies
+        coinsEarned = sum [enemyValue e | e <- enemies gs, e `notElem` updatedEnemies]
+        
+        -- Update state
         updatedGS = gs
-            { enemies = updateEnemies delta (enemies gs)
-            , projectiles = updateProjectiles delta (projectiles gs)
+            { enemies = updateEnemies delta updatedEnemies
+            , projectiles = map (\x -> moveProjectile delta x) remainingProjectiles
+            , coins = coins gs + coinsEarned
             , timeSinceLastWave = timeSinceLastWave gs + delta
             }
         updates = 
@@ -60,6 +120,23 @@ updateGame delta gs
             , \s -> towersAttack delta s
             , checkGameOver
             ]
+
+moveProjectile :: Float -> Projectile -> Projectile
+moveProjectile delta proj = case projTarget proj of
+    Nothing -> proj  -- No target, shouldn't happen
+    Just enemy ->
+        let (px, py) = projPosition proj
+            (ex, ey) = enemyPosition enemy
+            dx = ex - px
+            dy = ey - py
+            dist = sqrt (dx*dx + dy*dy)
+            moveDist = projSpeed proj * delta
+        in proj { projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist) }
+            -- if dist <= moveDist
+            -- then proj { projPosition = (ex, ey) }  -- Reached target
+            -- else 
+
+
 
 updateEnemies :: Float -> [Enemy] -> [Enemy]
 updateEnemies delta = map updateEnemy
@@ -126,7 +203,7 @@ createProjectile tower enemy = Projectile
     { projPosition = towerPosition tower
     , projTarget = Just enemy
     , projDamage = towerDamage tower
-    , projSpeed = 200.0  -- pixels per second
+    , projSpeed = projectileSpeed -- pixels per second
     }
 
 checkGameOver :: GameState -> GameState

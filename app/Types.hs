@@ -48,10 +48,12 @@ data Tower = Tower
 data Enemy = Enemy
     { enemyPosition :: Position
     , enemyType :: EnemyType
-    , enemyHealth :: Health
-    , enemySpeed :: Speed
-    , enemyPath :: [Position]  -- Precomputed path
-    , enemyCurrentTarget :: Int  -- Index in path
+    , enemyHealth :: Float 
+    , enemyMaxHealth :: Float 
+    , enemySpeed :: Float
+    , enemyPath :: [Position]
+    , enemyCurrentTarget :: Int
+    , enemyValue :: Int
     } deriving (Eq)
 
 data BuildMode = NotBuilding | Building TowerType

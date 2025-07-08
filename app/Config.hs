@@ -14,6 +14,22 @@ tileSize :: Float
 tileSize = 40.0
 
 -- Game balance constants
+
+basicEnemyHealth :: Float
+basicEnemyHealth = 100.0
+
+basicEnemySpeed :: Float
+basicEnemySpeed = 50.0
+
+basicEnemyValue :: Int
+basicEnemyValue = 25
+
+projectileSpeed :: Float
+projectileSpeed = 400.0
+
+hitRadius :: Float
+hitRadius = 10.0  -- Radius for projectile collision detection
+
 initialCoins :: Int
 initialCoins = 200
 
