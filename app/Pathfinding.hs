@@ -11,9 +11,8 @@ tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * til
 getEnemyPath :: [[TileType]] -> [Position]
 getEnemyPath tiles = 
     let start = findStart tiles
-        finish = findFinish tiles
-        road = [start]
-    in calculatePath start road finish tiles
+        road = findRoad tiles start
+    in calculatePath road 
 
 findStart :: [[TileType]] -> Position
 findStart tiles = 
@@ -22,39 +21,42 @@ findStart tiles =
                    tiles !! y !! x == Start] of 
         (a: _) -> tileToPos a
         [] -> error "No start tile found"
-    -- let y = 0
-    --     row = tiles !! y
-    --     x = head [i | (i, tile) <- zip [0..] row, tile == Road]
-    -- in (fromIntegral x * tileSize + tileSize/2, fromIntegral y * tileSize + tileSize/2)
 
--- lastEl :: [a] -> a
--- lastEl [x] = x
--- lastEl (x:xs) = lastEl xs
+lastEl :: [a] -> a
+lastEl [x] = x
+lastEl (x:xs) = lastEl xs
 
--- findRoad :: [[TileType]] -> Position -> [Position]
--- findRoad tiles start = helper start []
---     where 
---         helper :: Position -> [Position] -> [Positions]
---         helper prev path = let (x, y) = posToTile prev in 
---             if length path == 0 then tryNear Nothing x y else tryNear (Just (lastEl path)) x y
-        
---         tryNear :: Maybe Position -> Int -> Int -> Position
---         tryNear Nothing x y = case [(x' y') | x' <- [x, x + 1],
---                                               y' <- [y, y + 1],
---                                               tiles !! y !! x == Road]
---                                 (a:_) -> tileToPos a
---                                 [] -> error "No finish tile found"
---         tryNear (Just pos) x y = case
+findRoad :: [[TileType]] -> Position -> [Position]
+findRoad tiles start = helper start []
+    where 
+        helper prev path 
+            | let (a, b) = posToTile prev in getTile tiles a b == Just Finish = path ++ [prev]
+            | otherwise = let current = findNear prev path in helper current (path ++ [prev])
+
+        findNear prev path = let (x, y) = posToTile prev in
+            case [tileToPos (y', x') | (x', y') <- [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)],
+                             case getTile tiles x' y' of 
+                                Just Finish -> True 
+                                Just Road -> True 
+                                _ -> False ] of
+                [] -> error "No road tile found"
+                arr -> chooseCorrect (if length path /= 0 then filter (/= lastEl path) arr else arr) path
+
+        chooseCorrect [] prev = error ("No road Tile Found" ++ show (map posToTile prev))
+        chooseCorrect nearRoad prev
+            | isFinish nearRoad = getFinish nearRoad  
+            | otherwise = lastEl nearRoad             
+
+        isFinish [] = False
+        isFinish (x : xs)
+            | let (x', y') = posToTile x in getTile tiles x' y' == Just Finish = True 
+            | otherwise = isFinish xs
+
+        getFinish [] = error "Something wrong"
+        getFinish (x : xs) 
+            | let (x', y') = posToTile x in getTile tiles x' y' == Just Finish = x 
+            | otherwise = getFinish xs
 
 
-
-findFinish :: [[TileType]] -> Position
-findFinish tiles = 
-    case [(y, x) | y <- [0..length tiles - 1], 
-                   x <- [0..length (tiles !! y) - 1],
-                   tiles !! y !! x == Finish] of
-        (a:_) -> tileToPos a
-        [] -> error "No finish tile found"
-
-calculatePath :: Position -> [Position] -> Position -> [[TileType]] -> [Position]
-calculatePath start road finish _tiles = [start, finish]  -- Simplified path
+calculatePath :: [Position] -> [Position]
+calculatePath = id
