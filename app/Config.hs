@@ -17,6 +17,9 @@ xOffset, yOffset :: Float
 yOffset = 150.0
 xOffset = 100.0
 
+transferProjStart :: Position -> Position
+transferProjStart (x, y) = (x + tileSize/2, y + tileSize/2)
+
 -- Game balance constants
 
 basicEnemyHealth :: Float

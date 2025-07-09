@@ -169,7 +169,7 @@ findTarget tower enemiesInRange =
 
 createProjectile :: Tower -> Enemy -> Projectile
 createProjectile tower enemy = Projectile
-    { projPosition = towerPosition tower
+    { projPosition = transferProjStart $ towerPosition tower
     , projTarget = Just enemy
     , projDamage = towerDamage tower
     , projSpeed = projectileSpeed -- pixels per second
