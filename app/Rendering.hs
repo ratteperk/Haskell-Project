@@ -8,8 +8,10 @@ import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
 
 translateGameZone :: Picture -> Picture 
--- translateGameZone pic = pic
 translateGameZone pic = translate (- xOffset) (- yOffset) pic
+
+addTranslate :: Picture -> Picture 
+addTranslate pic = translate (tileSize/2) (tileSize/2) pic
 
 -- Add these helper functions
 renderProjectiles :: [Projectile] -> Picture
@@ -34,8 +36,8 @@ renderButton (Button pos size action label color) =
 
 renderGame :: GameState -> Picture
 renderGame gs = pictures
-    [ translateGameZone (renderMap gs)
-    , translateGameZone (renderTowers (towers gs))
+    [ addTranslate $ translateGameZone (renderMap gs)
+    , addTranslate $ translateGameZone (renderTowers (towers gs))
     , translateGameZone (renderEnemies (enemies gs))
     , translateGameZone (renderProjectiles (projectiles gs))
     , renderUI gs

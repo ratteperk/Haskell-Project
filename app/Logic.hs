@@ -10,40 +10,9 @@ import Data.List (find, foldl')
 distance :: Position -> Position -> Float
 distance (x1, y1) (x2, y2) = sqrt ((x2-x1)^2 + (y2-y1)^2)
 
-updateProjectiles :: Float -> [Projectile] -> [Projectile]
-updateProjectiles delta = map updateProjectile
-    where
-        updateProjectile proj = 
-            case projTarget proj of
-                Just enemy -> 
-                    let (ex, ey) = enemyPosition enemy
-                        (px, py) = projPosition proj
-                        dir@(dx, dy) = (ex - px, ey - py)
-                        dist = distance (px, py) (ex, ey)
-                        speed = projSpeed proj * delta
-                        move = if dist > 0 then mulSV (speed/dist) dir else (0, 0)
-                    in proj { projPosition = (px + fst move, py + snd move) }
-                Nothing -> proj
-
--- updateProjectiles' :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
--- updateProjectiles' delta projectiles enemies = foldl' processProjectile (projectiles, enemies) projectiles
---     where
---         processProjectile (projs, ens) proj =
---             case find (isHit proj) ens of
---                 Nothing -> (proj:projs, ens)  -- Projectile missed
---                 Just enemy -> 
---                     let damagedEnemy = applyDamage proj enemy
---                     in if enemyHealth damagedEnemy <= 0
---                         then (projs, filter (/= enemy) ens)  -- Enemy died
---                         else (projs, damagedEnemy : filter (/= enemy) ens)
-
---         isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
-
---         applyDamage proj enemy = enemy { enemyHealth = enemyHealth enemy - projDamage proj }
-
-updateProjectiles' :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
-updateProjectiles' _ [] enemies = ([], enemies)  -- Base case: no projectiles
-updateProjectiles' delta projectiles enemies =
+updateProjectiles :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
+updateProjectiles _ [] enemies = ([], enemies)  -- Base case: no projectiles
+updateProjectiles delta projectiles enemies =
     foldl' processProjectile ([], enemies) projectiles
     where
         processProjectile (remainingProjs, currentEnemies) proj =
@@ -103,7 +72,7 @@ updateGame delta gs
     | otherwise = foldl (\acc f -> f acc) updatedGS updates
     where
         -- Update projectiles and enemies with collision
-        (remainingProjectiles, updatedEnemies) = updateProjectiles' delta (projectiles gs) (enemies gs)
+        (remainingProjectiles, updatedEnemies) = updateProjectiles delta (projectiles gs) (enemies gs)
         
         -- Add coins for killed enemies
         coinsEarned = sum [enemyValue e | e <- enemies gs, e `notElem` updatedEnemies]
