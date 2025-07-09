@@ -3,6 +3,8 @@ module Pathfinding where
 import Types
 import Config (tileSize)
 import Input (posToTile, getTile)
+import System.Random (randomR, mkStdGen)
+
 
 tileToPos :: (Int, Int) -> Position 
 tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * tileSize + tileSize/2)
@@ -26,6 +28,9 @@ lastEl :: [a] -> a
 lastEl [x] = x
 lastEl (x:xs) = lastEl xs
 
+generateRandom :: Int -> Int -> Int 
+generateRandom l r = fst $ randomR (l, r) (mkStdGen 2)
+
 findRoad :: [[TileType]] -> Position -> [Position]
 findRoad tiles start = helper start []
     where 
@@ -45,7 +50,7 @@ findRoad tiles start = helper start []
         chooseCorrect [] prev = error ("No road Tile Found" ++ show (map posToTile prev))
         chooseCorrect nearRoad prev
             | isFinish nearRoad = getFinish nearRoad  
-            | otherwise = lastEl nearRoad             
+            | otherwise = nearRoad !! (generateRandom 0 (length nearRoad - 1))
 
         isFinish [] = False
         isFinish (x : xs)

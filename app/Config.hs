@@ -14,8 +14,8 @@ tileSize :: Float
 tileSize = 40.0
 
 xOffset, yOffset :: Float
-yOffset = 150.0
-xOffset = 100.0
+yOffset = 200.0
+xOffset = 150.0
 
 transferProjStart :: Position -> Position
 transferProjStart (x, y) = (x + tileSize/2, y + tileSize/2)
