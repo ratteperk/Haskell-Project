@@ -13,6 +13,10 @@ windowHeight = 600
 tileSize :: Float
 tileSize = 40.0
 
+xOffset, yOffset :: Float
+yOffset = 150.0
+xOffset = 100.0
+
 -- Game balance constants
 
 basicEnemyHealth :: Float
@@ -60,6 +64,9 @@ neutralColor = makeColor 0.7 0.7 0.7 1.0  -- Gray
 
 finishColor :: Color
 finishColor = makeColor 1.0 0.0 0.0 1.0  -- Red
+
+startColor :: Color
+startColor = yellow
 
 towerColors :: TowerType -> Color
 towerColors CannonTower = makeColor 0.0 0.0 1.0 1.0  -- Blue

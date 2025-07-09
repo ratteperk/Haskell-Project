@@ -7,6 +7,10 @@ import Types (startBuilding)
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
 
+translateGameZone :: Picture -> Picture 
+-- translateGameZone pic = pic
+translateGameZone pic = translate (- xOffset) (- yOffset) pic
+
 -- Add these helper functions
 renderProjectiles :: [Projectile] -> Picture
 renderProjectiles = pictures . map renderProjectile
@@ -30,10 +34,10 @@ renderButton (Button pos size action label color) =
 
 renderGame :: GameState -> Picture
 renderGame gs = pictures
-    [ renderMap gs
-    , renderTowers (towers gs)
-    , renderEnemies (enemies gs)
-    , renderProjectiles (projectiles gs)
+    [ translateGameZone (renderMap gs)
+    , translateGameZone (renderTowers (towers gs))
+    , translateGameZone (renderEnemies (enemies gs))
+    , translateGameZone (renderProjectiles (projectiles gs))
     , renderUI gs
     , if gameOver gs then renderGameOver else blank
     ]
@@ -49,6 +53,7 @@ renderMap gs = pictures $ concatMap renderRow (zip [0..] (tiles gs))
                     Buildable -> buildableColor
                     Neutral -> neutralColor
                     Finish -> finishColor
+                    Start -> startColor
             in translate (fst pos) (snd pos) $ colorRectangle color tileSize tileSize
 
 renderTowers :: [Tower] -> Picture
@@ -97,7 +102,7 @@ renderGameOver = translate (-100) 0 $ scale 0.3 0.3 $ color red $ text "GAME OVE
 -- Helper rendering functions
 -- Replace with:
 colorRectangle :: Color -> Float -> Float -> Picture
-colorRectangle c w h = Color c $ rectangleSolid w h
+colorRectangle c w h = pictures [Color c $ rectangleSolid w h, Color black $ rectangleWire w h]
 
 colorCircle :: Color -> Float -> Picture
 colorCircle c r = Color c $ circleSolid r

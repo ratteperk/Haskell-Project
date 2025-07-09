@@ -20,7 +20,7 @@ type Position = (Float, Float)
 type TileCoord = (Int, Int)
 
 -- Game entities
-data TileType = Road | Buildable | Neutral | Finish
+data TileType = Road | Buildable | Neutral | Finish | Start
     deriving (Eq, Show)
 
 data TowerType = CannonTower | SlowTower

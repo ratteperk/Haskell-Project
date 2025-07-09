@@ -9,15 +9,26 @@ import Input
 import Logic
 import Config
 
+n, r, b, f :: TileType
+n = Neutral 
+r = Road 
+b = Buildable 
+f = Finish
+s = Start
+
 -- Sample map (0 = Neutral, 1 = Road, 2 = Buildable, 3 = Finish)
 sampleMap :: [[TileType]]
 sampleMap =
-    [ [Buildable, Road, Road,   Neutral, Neutral, Neutral]
-    , [Buildable, Road,   Neutral, Neutral, Neutral]
-    , [Neutral, Road,   Road,    Road,    Road]
-    , [Neutral, Neutral,Neutral, Road,    Neutral]
-    , [Neutral, Neutral,Neutral, Road,    Neutral, Finish]
-    ]
+    [[n, n, n, n, n, n, n, n, s, n],
+     [n, n, n, n, n, n, n, b, r, n],
+     [n, n, n, n, n, n, b, b, r, n], 
+     [n, n, n, n, n, b, b, b, r, n], 
+     [n, n, n, n, n, b, b, b, r, n], 
+     [n, b, b, r, r, r, r, r, r, n], 
+     [n, b, b, r, b, b, b, b, n, n], 
+     [n, r, r, r, b, b, b, b, n, n], 
+     [n, r, n, n, n, n, n, n, n, n], 
+     [n, f, n, n, n, n, n, n, n, n]]
 
 main :: IO ()
 main = do

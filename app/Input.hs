@@ -62,8 +62,8 @@ buildTower pos towerType gs =
         , buildMode = NotBuilding
         }
 
-mousePosToTile :: Position -> (Int, Int)
-mousePosToTile (x, y) = 
+posToTile :: Position -> (Int, Int)
+posToTile (x, y) = 
     (floor (x / tileSize), floor (y / tileSize))
 
 -- Update the button handling
@@ -71,9 +71,9 @@ handleInput :: Event -> GameState -> GameState
 handleInput event gs = case event of
     EventKey (MouseButton LeftButton) Down _ mousePos ->
         case buildMode gs of
-            Building towerType -> 
-                if canBuildHere mousePos gs
-                then tryBuildTower (tileCenterPosition (mousePosToTile mousePos)) towerType gs
+            Building towerType -> let mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos) in
+                if canBuildHere mousePosOffset gs
+                then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
                 else gs
             NotBuilding -> 
                 case getClickedButton mousePos gs of
