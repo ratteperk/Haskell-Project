@@ -63,7 +63,7 @@ renderTowers = pictures . map renderTower
     where
         renderTower tower = 
             let color = towerColors (towerType tower)
-                radius = towerRange tower  -- Visual representation of range
+                radius = towerRange tower / sqrt 2  -- Visual representation of range
             in pictures
                 [ translate (fst pos) (snd pos) $ colorRectangle color 30 30
                 , translate (fst pos) (snd pos) $ colorCircle (withAlpha 0.2 color) radius
