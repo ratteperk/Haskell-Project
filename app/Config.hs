@@ -1,5 +1,6 @@
 module Config where
 
+import System.Random (randomR, mkStdGen)
 import Graphics.Gloss.Data.Color
 import Types
 
@@ -104,3 +105,6 @@ towerColors SplashTower = violet
 
 enemyColor :: EnemyType -> Color
 enemyColor BasicEnemy = makeColor 0.8 0.2 0.2 1.0  -- Red
+
+initGen :: Int 
+initGen = 2

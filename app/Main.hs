@@ -8,6 +8,7 @@ import Rendering
 import Input
 import Logic
 import Config
+import System.Random (randomR, mkStdGen, newStdGen)
 
 n, r, b, f :: TileType
 n = Neutral 
@@ -35,7 +36,8 @@ sampleMap =
 
 main :: IO ()
 main = do
-    let initialGameState = initialState sampleMap 
+    rndGen <- newStdGen
+    let initialGameState = (initialState sampleMap) {randomGen = rndGen}
     playIO
         (InWindow 
             "Tower Defense" 

@@ -2,6 +2,7 @@ module GameState where
 
 import Config
 import Types
+import System.Random (mkStdGen)
 
 initialState :: [[TileType]] -> GameState
 initialState mapTiles = GameState
@@ -14,6 +15,7 @@ initialState mapTiles = GameState
     , gameOver = False
     , waveNumber = 0
     , timeSinceLastWave = 0
+    , randomGen = mkStdGen initGen
     }
 
 -- Helper functions for state manipulation

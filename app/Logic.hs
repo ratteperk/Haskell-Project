@@ -5,6 +5,7 @@ import Config
 import Pathfinding
 import Graphics.Gloss.Data.Vector (mulSV)
 import Data.List (find, foldl')
+import System.Random (randomR)
 
 -- Add these helper functions
 distance :: Position -> Position -> Float
@@ -39,7 +40,7 @@ updateProjectiles delta projectiles enemies =
 spawnEnemies :: GameState -> GameState
 spawnEnemies gs
     | timeSinceLastWave gs > 5 && null (enemies gs) =
-        let newEnemies = replicate (waveNumber gs + 3) (createEnemy (head (getEnemyPath (tiles gs))))
+        let newEnemies = replicate (waveNumber gs + 3) (createEnemy (head (getEnemyPath (tiles gs) (randomGen gs))))
         in gs { enemies = newEnemies
              , waveNumber = waveNumber gs + 1
              , timeSinceLastWave = 0 }
@@ -52,7 +53,7 @@ spawnEnemies gs
             , enemyMaxHealth = basicEnemyHealth
             , enemyValue = basicEnemyValue
             , enemySpeed = basicEnemySpeed
-            , enemyPath = getEnemyPath (tiles gs)
+            , enemyPath = getEnemyPath (tiles gs) (randomGen gs)
             , enemyCurrentTarget = 0
             }
 
@@ -68,6 +69,8 @@ updateGame delta gs
         -- Add coins for killed enemies
         coinsEarned = sum [enemyValue e | e <- updatedEnemies, enemyHealth e <= 0]
         
+        (_, newGen) = randomR (1 :: Int, 100 :: Int) (randomGen gs)
+
         updatedEnemies' = moveEnemies delta (filter (\e -> enemyHealth e > 0) updatedEnemies)
         -- Update state
         updatedGS = gs
@@ -75,6 +78,7 @@ updateGame delta gs
             , projectiles = filter hasNotReachedTarget $ map (\x -> moveProjectile delta x) remainingProjectiles
             , coins = coins gs + coinsEarned
             , timeSinceLastWave = timeSinceLastWave gs + delta
+            , randomGen = newGen
             }
         updates = 
             [ spawnEnemies

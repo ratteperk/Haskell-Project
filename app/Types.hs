@@ -5,6 +5,7 @@ module Types
 
 import Graphics.Gloss (Point, Picture)
 import Graphics.Gloss.Data.Color
+import System.Random (randomR, mkStdGen, StdGen)
 
 
 -- Basic types
@@ -70,6 +71,7 @@ data GameState = GameState
     , gameOver :: Bool
     , waveNumber :: Int
     , timeSinceLastWave :: Time
+    , randomGen :: StdGen
     }
 
 -- In Types.hs

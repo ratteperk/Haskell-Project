@@ -3,17 +3,17 @@ module Pathfinding where
 import Types
 import Config (tileSize)
 import Input (posToTile, getTile)
-import System.Random (randomR, mkStdGen)
+import System.Random (randomR, mkStdGen, StdGen)
 
 
 tileToPos :: (Int, Int) -> Position 
 tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * tileSize + tileSize/2)
 
 -- Precompute path for enemies based on the map
-getEnemyPath :: [[TileType]] -> [Position]
-getEnemyPath tiles = 
+getEnemyPath :: [[TileType]] -> StdGen -> [Position]
+getEnemyPath tiles gen = 
     let start = findStart tiles
-        road = findRoad tiles start
+        road = findRoad tiles start gen
     in calculatePath road 
 
 findStart :: [[TileType]] -> Position
@@ -28,11 +28,11 @@ lastEl :: [a] -> a
 lastEl [x] = x
 lastEl (x:xs) = lastEl xs
 
-generateRandom :: Int -> Int -> Int 
-generateRandom l r = fst $ randomR (l, r) (mkStdGen 2)
+generateRandom :: Int -> Int -> StdGen -> Int 
+generateRandom l r gen = fst $ randomR (l, r) gen
 
-findRoad :: [[TileType]] -> Position -> [Position]
-findRoad tiles start = helper start []
+findRoad :: [[TileType]] -> Position -> StdGen -> [Position]
+findRoad tiles start gen = helper start []
     where 
         helper prev path 
             | let (a, b) = posToTile prev in getTile tiles a b == Just Finish = path ++ [prev]
@@ -50,7 +50,7 @@ findRoad tiles start = helper start []
         chooseCorrect [] prev = error ("No road Tile Found" ++ show (map posToTile prev))
         chooseCorrect nearRoad prev
             | isFinish nearRoad = getFinish nearRoad  
-            | otherwise = nearRoad !! (generateRandom 0 (length nearRoad - 1))
+            | otherwise = nearRoad !! (generateRandom 0 (length nearRoad - 1) gen)
 
         isFinish [] = False
         isFinish (x : xs)
