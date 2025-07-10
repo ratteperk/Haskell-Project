@@ -47,13 +47,13 @@ buildTower pos towerType gs =
             , towerType = towerType
             , towerDamage = case towerType of
                 CannonTower -> cannonTowerDamage
-                SlowTower -> 0  -- Slow tower doesn't damage
+                SlowTower -> slowTowerDamage  -- Slow tower doesn't damage
             , towerRange = case towerType of
-                CannonTower -> 150
-                SlowTower -> 120
+                CannonTower -> cannonTowerRange
+                SlowTower -> slowTowerRange
             , towerCooldown = case towerType of
-                CannonTower -> 1.0
-                SlowTower -> 2.0
+                CannonTower -> cannonTowerCooldown
+                SlowTower -> slowTowerCooldown
             , towerTimeSinceLastShot = 0
             }
     in gs 

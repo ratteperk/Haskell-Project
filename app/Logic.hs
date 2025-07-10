@@ -20,9 +20,9 @@ updateProjectiles delta projectiles enemies =
                 Nothing -> (proj : remainingProjs, currentEnemies)  -- Miss
                 Just enemy ->
                     let damagedEnemy = applyDamage proj enemy
-                    in if enemyHealth damagedEnemy <= 0
-                        then (remainingProjs, filter (/= enemy) currentEnemies)  -- Killed
-                        else (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies)  -- Damaged
+                    in (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies) -- if enemyHealth damagedEnemy <= 0
+                    --     then (remainingProjs, damagedEnemy:currentEnemies)  -- Killed filter (/= enemy)
+                    --     else (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies)  -- Damaged
 
         isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
 
@@ -75,12 +75,13 @@ updateGame delta gs
         (remainingProjectiles, updatedEnemies) = updateProjectiles delta (projectiles gs) (enemies gs)
         
         -- Add coins for killed enemies
-        coinsEarned = sum [enemyValue e | e <- enemies gs, e `notElem` updatedEnemies]
+        coinsEarned = sum [enemyValue e | e <- updatedEnemies, enemyHealth e <= 0]
         
+        updatedEnemies' = moveEnemies delta (filter (\e -> enemyHealth e > 0) updatedEnemies)
         -- Update state
         updatedGS = gs
-            { enemies = updateEnemies delta updatedEnemies
-            , projectiles = map (\x -> moveProjectile delta x) remainingProjectiles
+            { enemies = updatedEnemies'
+            , projectiles = filter hasNotReachedTarget $ map (\x -> moveProjectile delta x) remainingProjectiles
             , coins = coins gs + coinsEarned
             , timeSinceLastWave = timeSinceLastWave gs + delta
             }
@@ -89,6 +90,10 @@ updateGame delta gs
             , \s -> towersAttack delta s
             , checkGameOver
             ]
+        
+        hasNotReachedTarget proj = case projTarget proj of
+            Nothing -> False
+            Just enemy -> enemyPosition enemy /= projPosition proj
 
 moveProjectile :: Float -> Projectile -> Projectile
 moveProjectile delta proj = case projTarget proj of
@@ -100,15 +105,15 @@ moveProjectile delta proj = case projTarget proj of
             dy = ey - py
             dist = sqrt (dx*dx + dy*dy)
             moveDist = projSpeed proj * delta
-        in proj { projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist) }
-            -- if dist <= moveDist
-            -- then proj { projPosition = (ex, ey) }  -- Reached target
-            -- else 
+        in 
+            if dist <= moveDist
+            then proj { projPosition = (ex, ey) }
+            else proj { projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist) }
 
 
 
-updateEnemies :: Float -> [Enemy] -> [Enemy]
-updateEnemies delta = map updateEnemy
+moveEnemies :: Float -> [Enemy] -> [Enemy]
+moveEnemies delta = map updateEnemy
     where
         updateEnemy e = e 
             { enemyPosition = moveAlongPath e delta

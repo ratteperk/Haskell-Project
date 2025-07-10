@@ -32,10 +32,10 @@ basicEnemyValue :: Int
 basicEnemyValue = 25
 
 projectileSpeed :: Float
-projectileSpeed = 400.0
+projectileSpeed = 900.0
 
 hitRadius :: Float
-hitRadius = 10.0  -- Radius for projectile collision detection
+hitRadius = 30.0  -- Radius for projectile collision detection
 
 initialCoins :: Int
 initialCoins = 200
@@ -48,6 +48,18 @@ slowTowerCost = 75
 
 cannonTowerDamage :: Float
 cannonTowerDamage = 10.0
+
+slowTowerDamage :: Float
+slowTowerDamage = 0
+
+
+cannonTowerRange, slowTowerRange :: Float
+cannonTowerRange = 150
+slowTowerRange = 120
+
+cannonTowerCooldown, slowTowerCooldown :: Float
+cannonTowerCooldown = 1
+slowTowerCooldown = 0
 
 slowTowerSlowFactor :: Float
 slowTowerSlowFactor = 0.5  -- Reduces enemy speed by 50%
