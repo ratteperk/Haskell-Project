@@ -18,15 +18,23 @@ updateProjectiles delta projectiles enemies =
         processProjectile (remainingProjs, currentEnemies) proj =
             case find (isHit proj) currentEnemies of
                 Nothing -> (proj : remainingProjs, currentEnemies)  -- Miss
-                Just enemy ->
-                    let damagedEnemy = applyDamage proj enemy
-                    in (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies) -- if enemyHealth damagedEnemy <= 0
-                    --     then (remainingProjs, damagedEnemy:currentEnemies)  -- Killed filter (/= enemy)
-                    --     else (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies)  -- Damaged
+                Just enemy -> case projType proj of
+                    SplashTower -> (remainingProjs, map (isUnderSplash proj) currentEnemies)
+                    _ ->
+                        let damagedEnemy = applyEffect proj enemy
+                        in (remainingProjs, damagedEnemy : filter (/= enemy) currentEnemies)
 
         isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
+        applyEffect proj enemy = case projType proj of
+            CannonTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
+            SlowTower -> enemy {enemySpeed = slowTowerCoef}
+            SplashTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
+        
+        isUnderSplash projectile enemy =
+            if distance (projPosition projectile) (enemyPosition enemy) <= splashTowerSplashRadius
+            then enemy { enemyHealth = enemyHealth enemy - projDamage projectile}
+            else enemy
 
-        applyDamage proj enemy = enemy { enemyHealth = enemyHealth enemy - projDamage proj }
 
 spawnEnemies :: GameState -> GameState
 spawnEnemies gs
@@ -48,23 +56,6 @@ spawnEnemies gs
             , enemyCurrentTarget = 0
             }
 
--- Update the foldl in updateGame to use function application
--- Remove one of these duplicate declarations
--- updateGame :: Float -> GameState -> GameState
--- updateGame delta gs 
---     | gameOver gs = gs
---     | otherwise = foldl (\acc f -> f acc) updatedGS updates
---     where
---         updatedGS = gs
---             { enemies = updateEnemies delta (enemies gs)
---             , projectiles = updateProjectiles delta (projectiles gs)
---             , timeSinceLastWave = timeSinceLastWave gs + delta
---             }
---         updates = 
---             [ spawnEnemies
---             , \s -> towersAttack delta s
---             , checkGameOver
---             ]
 
 updateGame :: Float -> GameState -> GameState
 updateGame delta gs 
@@ -109,8 +100,6 @@ moveProjectile delta proj = case projTarget proj of
             if dist <= moveDist
             then proj { projPosition = (ex, ey) }
             else proj { projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist) }
-
-
 
 moveEnemies :: Float -> [Enemy] -> [Enemy]
 moveEnemies delta = map updateEnemy
@@ -163,7 +152,8 @@ towersAttack delta gs = foldl (attackWithTower delta) gs (towers gs)
                             }
                     Nothing -> acc
             | otherwise = 
-                acc { towers = tower { towerTimeSinceLastShot = towerTimeSinceLastShot tower + delta } : filter (/= tower) (towers acc) }
+                acc { towers = tower { towerTimeSinceLastShot = towerTimeSinceLastShot tower + delta } 
+                    : filter (/= tower) (towers acc) }
 
 findTarget :: Tower -> [Enemy] -> Maybe Enemy
 findTarget tower enemiesInRange = 
@@ -175,6 +165,7 @@ findTarget tower enemiesInRange =
 createProjectile :: Tower -> Enemy -> Projectile
 createProjectile tower enemy = Projectile
     { projPosition = transferProjStart $ towerPosition tower
+    , projType = towerType tower
     , projTarget = Just enemy
     , projDamage = towerDamage tower
     , projSpeed = projectileSpeed -- pixels per second

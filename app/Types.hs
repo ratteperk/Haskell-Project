@@ -23,7 +23,7 @@ type TileCoord = (Int, Int)
 data TileType = Road | Buildable | Neutral | Finish | Start
     deriving (Eq, Show)
 
-data TowerType = CannonTower | SlowTower
+data TowerType = CannonTower | SlowTower | SplashTower
     deriving (Eq, Show)
 
 data EnemyType = BasicEnemy
@@ -31,6 +31,7 @@ data EnemyType = BasicEnemy
 
 data Projectile = Projectile
     { projPosition :: Position
+    , projType :: TowerType
     , projTarget :: Maybe Enemy  -- Target enemy
     , projDamage :: Damage
     , projSpeed :: Speed

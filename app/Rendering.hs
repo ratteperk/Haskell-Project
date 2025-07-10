@@ -93,6 +93,7 @@ renderUI gs = pictures
     [ translate (-350) 250 $ scale 0.2 0.2 $ text ("Coins: " ++ show (coins gs))
     , renderButton $ Button (-300, -250) (100, 50) (startBuilding CannonTower) "Cannon" blue
     , renderButton $ Button (-150, -250) (100, 50) (startBuilding SlowTower) "Slow" orange
+    , renderButton $ Button (0, -250) (100, 50) (startBuilding SplashTower) "Splash" violet
     , case buildMode gs of
         Building _ -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on buildable tile to place tower"
         _ -> blank

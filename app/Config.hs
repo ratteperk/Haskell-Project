@@ -28,6 +28,7 @@ basicEnemyHealth = 100.0
 basicEnemySpeed :: Float
 basicEnemySpeed = 50.0
 
+
 basicEnemyValue :: Int
 basicEnemyValue = 25
 
@@ -46,23 +47,36 @@ cannonTowerCost = 50
 slowTowerCost :: Int
 slowTowerCost = 75
 
+splashTowerCost :: Int
+splashTowerCost = 100
+
 cannonTowerDamage :: Float
 cannonTowerDamage = 10.0
 
 slowTowerDamage :: Float
 slowTowerDamage = 0
 
+splashTowerDamage :: Float
+splashTowerDamage = 15
 
-cannonTowerRange, slowTowerRange :: Float
+slowTowerCoef :: Float
+slowTowerCoef = 30
+
+cannonTowerRange, slowTowerRange, splashTowerRange :: Float
 cannonTowerRange = 150
 slowTowerRange = 120
+splashTowerRange = 135
 
-cannonTowerCooldown, slowTowerCooldown :: Float
+cannonTowerCooldown, slowTowerCooldown, splashTowerCooldown :: Float
 cannonTowerCooldown = 1
-slowTowerCooldown = 0
+slowTowerCooldown = 2
+splashTowerCooldown = 1.5
 
 slowTowerSlowFactor :: Float
 slowTowerSlowFactor = 0.5  -- Reduces enemy speed by 50%
+
+splashTowerSplashRadius :: Float
+splashTowerSplashRadius = 50
 
 enemyReward :: Int
 enemyReward = 20
@@ -86,6 +100,7 @@ startColor = yellow
 towerColors :: TowerType -> Color
 towerColors CannonTower = makeColor 0.0 0.0 1.0 1.0  -- Blue
 towerColors SlowTower = makeColor 1.0 0.5 0.0 1.0   -- Orange
+towerColors SplashTower = violet
 
 enemyColor :: EnemyType -> Color
 enemyColor BasicEnemy = makeColor 0.8 0.2 0.2 1.0  -- Red

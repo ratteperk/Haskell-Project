@@ -6,7 +6,7 @@ import Config
 import GameState
 import Types (startBuilding)
 import Data.List (find)
-import Graphics.Gloss.Data.Color (blue, orange)
+import Graphics.Gloss.Data.Color (blue, orange, violet)
 
 getTile :: [[TileType]] -> Int -> Int -> Maybe TileType
 getTile grid x y
@@ -31,6 +31,7 @@ canBuildHere (x, y) gs = isBuildable && enoughCoins
         _ -> case buildMode gs of
                 Building CannonTower -> coins gs >= cannonTowerCost
                 Building SlowTower -> coins gs >= slowTowerCost
+                Building SplashTower -> coins gs >= splashTowerCost
                 _ -> False
 
 tileCenterPosition :: (Int, Int) -> Position
@@ -42,18 +43,22 @@ buildTower pos towerType gs =
     let cost = case towerType of
                 CannonTower -> cannonTowerCost
                 SlowTower -> slowTowerCost
+                SplashTower -> splashTowerCost
         newTower = Tower
             { towerPosition = pos
             , towerType = towerType
             , towerDamage = case towerType of
                 CannonTower -> cannonTowerDamage
                 SlowTower -> slowTowerDamage  -- Slow tower doesn't damage
+                SplashTower -> splashTowerDamage
             , towerRange = case towerType of
                 CannonTower -> cannonTowerRange
                 SlowTower -> slowTowerRange
+                SplashTower -> splashTowerRange
             , towerCooldown = case towerType of
                 CannonTower -> cannonTowerCooldown
                 SlowTower -> slowTowerCooldown
+                SplashTower -> splashTowerCooldown
             , towerTimeSinceLastShot = 0
             }
     in gs 
@@ -107,6 +112,12 @@ getClickedButton pos gs =
                     , btnAction = startBuilding SlowTower
                     , btnLabel = "Slow"
                     , btnColor = orange
+                    }
+            , Button { btnPosition = (0, -250)
+                    , btnSize = (100, 50)
+                    , btnAction = startBuilding SplashTower
+                    , btnLabel = "Slow"
+                    , btnColor = violet
                     }
             ]
     in find (isPointInButton pos) buttons
