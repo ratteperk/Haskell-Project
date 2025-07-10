@@ -1,5 +1,6 @@
 module Config where
 
+import System.Random (randomR, mkStdGen)
 import Graphics.Gloss.Data.Color
 import Types
 
@@ -89,3 +90,6 @@ towerColors SlowTower = makeColor 1.0 0.5 0.0 1.0   -- Orange
 
 enemyColor :: EnemyType -> Color
 enemyColor BasicEnemy = makeColor 0.8 0.2 0.2 1.0  -- Red
+
+initGen :: Int 
+initGen = 2
