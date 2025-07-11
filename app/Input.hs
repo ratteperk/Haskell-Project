@@ -1,6 +1,6 @@
 module Input where
 
-import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
+import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..), SpecialKey(..))
 import Types
 import Config
 import GameState
@@ -50,7 +50,7 @@ buildTower pos towerType gs =
       , towerType = towerType
       , towerDamage = case towerType of
         CannonTower -> cannonTowerDamage
-        SlowTower -> slowTowerDamage  -- Slow tower doesn't damage
+        SlowTower -> slowTowerDamage
         SplashTower -> splashTowerDamage
       , towerRange = case towerType of
         CannonTower -> cannonTowerRange
@@ -72,7 +72,6 @@ posToTile :: Position -> (Int, Int)
 posToTile (x, y) = 
   (floor (x / tileSize), floor (y / tileSize))
 
--- Update the button handling
 handleInput :: Event -> GameState -> GameState
 handleInput event gs = case event of
   EventKey (MouseButton LeftButton) Down _ mousePos ->
@@ -87,6 +86,8 @@ handleInput event gs = case event of
         case getClickedButton mousePos gs of
           Just button -> btnAction button gs
           Nothing -> gs
+  EventKey (SpecialKey KeySpace) Down _ _ ->
+    if gameOver gs then (initialState sampleMap) {randomGen = randomGen gs} else gs
   _ -> gs
 
 tryBuildTower :: Position -> TowerType -> GameState -> GameState
@@ -101,7 +102,6 @@ tryBuildTower pos towerType gs = if gameOver gs then gs else
     _ -> buildTower pos towerType gs
 
 
--- Update button creation to use record syntax
 getClickedButton :: Position -> GameState -> Maybe UIElement
 getClickedButton pos gs = 
   let 

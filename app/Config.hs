@@ -6,59 +6,39 @@ import Types
 import Data.List (find)
 
 -- Display configuration
-windowWidth :: Int
+windowWidth, windowHeight :: Int
 windowWidth = 800
-
-windowHeight :: Int
 windowHeight = 600
 
 tileSize :: Float
-tileSize = 40.0
+tileSize = 40
 
 xOffset, yOffset :: Float
-yOffset = 200.0
-xOffset = 150.0
+yOffset = 200
+xOffset = 150
 
 transferProjStart :: Position -> Position
 transferProjStart (x, y) = (x + tileSize/2, y + tileSize/2)
 
--- Game balance constants
+-- Enemy section
 
-basicEnemyHealth :: Float
-basicEnemyHealth = 100.0
+basicEnemyHealth, strongEnemyHealth, bossHealth :: Float 
+basicEnemyHealth = 100
+strongEnemyHealth = 200
+bossHealth = 1700
 
-basicEnemySpeed :: Float
-basicEnemySpeed = 50.0
+basicEnemySpeed, strongEnemySpeed, bossSpeed :: Float
+basicEnemySpeed = 50
+strongEnemySpeed = 30
+bossSpeed = 20
 
-basicEnemyValue :: Int
+basicEnemyValue, strongEnemyValue,bossValue :: Int 
 basicEnemyValue = 20
-
-strongEnemyHealth :: Float 
-strongEnemyHealth = 200.0
-
-strongEnemySpeed :: Float
-strongEnemySpeed = 30.0
-
-strongEnemyValue :: Int 
 strongEnemyValue = 40
-
-bossHealth :: Float 
-bossHealth = 1700.0
-
-bossSpeed :: Float 
-bossSpeed = 20.0
-
-bossValue :: Int 
 bossValue = 200
 
-projectileSpeed :: Float
-projectileSpeed = 900.0
-
-hitRadius :: Float
-hitRadius = 30.0  -- Radius for projectile collision detection
-
 startPos :: Position
-startPos = (0.0, 0.0)
+startPos = (0, 0)
 
 startPath :: [Position]
 startPath = []
@@ -99,45 +79,39 @@ boss = Enemy
   , enemyCurrentTarget = 0
   }
 
-bwEnemies :: [Enemy]
+-- Predefined enemy waves
+bwEnemies, fwEnemies, swEnemies, lwEnemies :: [Enemy]
 bwEnemies = [basicEnemy, basicEnemy]
 
-fwEnemies :: [Enemy]
 fwEnemies = [basicEnemy, basicEnemy, basicEnemy]
 
-swEnemies :: [Enemy]
 swEnemies = [strongEnemy, strongEnemy, strongEnemy]
 
-twEnemies :: [Enemy]
 twEnemies = fwEnemies ++ [strongEnemy, basicEnemy, strongEnemy, basicEnemy] ++ swEnemies
 
-lwEnemies :: [Enemy]
 lwEnemies = swEnemies ++ swEnemies ++ [boss]
 
 
-initialCoins :: Int
-initialCoins = 200
+-- Projectiles section
 
-cannonTowerCost :: Int
+projectileSpeed :: Float
+projectileSpeed = 900
+
+hitRadius :: Float
+hitRadius = 30  -- Radius for projectile collision detection
+
+-- Tower section
+
+cannonTowerCost, slowTowerCost, splashTowerCost :: Int
 cannonTowerCost = 50
-
-slowTowerCost :: Int
 slowTowerCost = 75
-
-splashTowerCost :: Int
 splashTowerCost = 100
 
-cannonTowerDamage :: Float
-cannonTowerDamage = 15.0
-
-slowTowerDamage :: Float
+cannonTowerDamage, slowTowerDamage, splashTowerDamage :: Float
+cannonTowerDamage = 15
 slowTowerDamage = 5
+splashTowerDamage = 25
 
-splashTowerDamage :: Float
-splashTowerDamage = 30
-
-slowTowerCoef :: Float
-slowTowerCoef = 0.75
 
 cannonTowerRange, slowTowerRange, splashTowerRange :: Float
 cannonTowerRange = 150
@@ -149,56 +123,63 @@ cannonTowerCooldown = 1
 slowTowerCooldown = 2
 splashTowerCooldown = 1.5
 
-slowTowerSlowFactor :: Float
-slowTowerSlowFactor = 0.5  -- Reduces enemy speed by 50%
+
+-- Specific constants:
+
+slowTowerCoef :: Float
+slowTowerCoef = 0.75
 
 splashTowerSplashRadius :: Float
 splashTowerSplashRadius = 50
 
-enemyReward :: Int
-enemyReward = 20
 
 -- Colors
 roadColor :: Color
-roadColor = makeColor 0.5 0.35 0.05 1.0  -- Brown
+roadColor = makeColor 0.5 0.35 0.05 10  -- Brown
 
 buildableColor :: Color
-buildableColor = makeColor 0.1 0.8 0.1 1.0  -- Green
+buildableColor = makeColor 0.1 0.8 0.1 1.0 -- Green that less bright than "green" from gloss
 
 neutralColor :: Color
-neutralColor = makeColor 0.7 0.7 0.7 1.0  -- Gray
+neutralColor = makeColor 0.7 0.7 0.7 10  -- Gray
 
 finishColor :: Color
-finishColor = makeColor 1.0 0.0 0.0 1.0  -- Red
+finishColor = red
 
 startColor :: Color
 startColor = yellow
 
 towerColors :: TowerType -> Color
-towerColors CannonTower = makeColor 0.0 0.0 1.0 1.0  -- Blue
-towerColors SlowTower = makeColor 1.0 0.5 0.0 1.0   -- Orange
+towerColors CannonTower = blue
+towerColors SlowTower = orange
 towerColors SplashTower = violet
 
 enemyColor :: EnemyType -> Color
-enemyColor BasicEnemy = makeColor 0.8 0.2 0.2 1.0  -- Red
+enemyColor BasicEnemy = makeColor 0.8 0.2 0.2 1.0 -- Red that less bright than "red" from gloss
 enemyColor StrongEnemy = blue
 enemyColor Boss = orange
 
--- Waves
+-- Waves section
 
 waveConfigs :: [(WaveType, [Enemy], Float)]
 waveConfigs = 
   [ (BasicWave, bwEnemies, 0.8)
   , (FirstWave, fwEnemies, 0.5)
-  , (SecondWave, swEnemies, 1.0)
-  , (ThirdWave, twEnemies, 1.0)
+  , (SecondWave, swEnemies, 1)
+  , (ThirdWave, twEnemies, 1)
   , (LastWave, lwEnemies, 1.5)]
 
 getWaveConfig :: WaveType -> (WaveType, [Enemy], Float)
 getWaveConfig wt = 
   case find (\(t,_,_) -> t == wt) waveConfigs of
     Just cfg -> cfg
-    Nothing -> (BasicWave, bwEnemies, 1.0)
+    Nothing -> (BasicWave, bwEnemies, 1)
+
+-- Game section
 
 initGen :: Int 
-initGen = 2
+initGen = 2 -- Constant to initialize generator field in initialState (although in Main 
+            -- generator initial value is generated in runtime)
+
+initialCoins :: Int
+initialCoins = 200

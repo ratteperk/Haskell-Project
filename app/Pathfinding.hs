@@ -9,12 +9,9 @@ import System.Random (randomR, mkStdGen, StdGen)
 tileToPos :: (Int, Int) -> Position 
 tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * tileSize + tileSize/2)
 
--- Precompute path for enemies based on the map
+-- Precompute path for enemies based on the map and current random generator state 
 getEnemyPath :: [[TileType]] -> StdGen -> [Position]
-getEnemyPath tiles gen = calculatePath road 
-  where
-    start = findStart tiles
-    road = findRoad tiles start gen 
+getEnemyPath tiles gen = findRoad tiles (findStart tiles) gen 
 
 findStart :: [[TileType]] -> Position
 findStart tiles = 
@@ -61,7 +58,3 @@ findRoad tiles start gen = helper start []
     getFinish (x : xs) 
       | let (x', y') = posToTile x in getTile tiles x' y' == Just Finish = x 
       | otherwise = getFinish xs
-
-
-calculatePath :: [Position] -> [Position]
-calculatePath = id

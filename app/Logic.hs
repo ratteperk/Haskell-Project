@@ -7,10 +7,12 @@ import Graphics.Gloss.Data.Vector (mulSV)
 import Data.List (find, foldl')
 import System.Random (randomR)
 
--- Add these helper functions
+
 distance :: Position -> Position -> Float
 distance (x1, y1) (x2, y2) = sqrt ((x2-x1)^2 + (y2-y1)^2)
 
+
+-- Returns updated projectiles and enemies
 updateProjectiles :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
 updateProjectiles _ [] enemies = ([], enemies)  -- Base case: no projectiles
 updateProjectiles delta projectiles enemies =
@@ -28,7 +30,9 @@ updateProjectiles delta projectiles enemies =
     isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
     applyEffect proj enemy = case projType proj of
       CannonTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
-      SlowTower -> enemy {enemySpeed = if enemySpeed enemy > 25 then  enemySpeed enemy * slowTowerCoef else enemySpeed enemy}
+      SlowTower ->
+        enemy {enemySpeed = if enemySpeed enemy > 25 
+        then  enemySpeed enemy * slowTowerCoef else enemySpeed enemy}
       SplashTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
     
     isUnderSplash projectile enemy =
@@ -52,10 +56,6 @@ spawnEnemies dt gs
   | null (enemies gs) && null (waveEnemies gs) = gs {timeSinceLastWave = timeSinceLastWave gs + dt}
   | otherwise = gs {spawnTimer = spawnTimer gs - dt}
 
--- let newEnemies = replicate (waveNumber gs + 3) (createEnemy (head (getEnemyPath (tiles gs) (randomGen gs))))
-    -- in gs { enemies = newEnemies
-    --    , waveNumber = waveNumber gs + 1
-    --    , timeSinceLastWave = 0 }
 
 spawnNextEnemy :: GameState -> GameState
 spawnNextEnemy gs = case waveEnemies gs of 
@@ -68,16 +68,15 @@ spawnNextEnemy gs = case waveEnemies gs of
 
 prepareNextWave :: GameState -> GameState 
 prepareNextWave gs = 
-  let nextWaveType = getNextWaveType (currentWave gs)
-      (_, newEnemies, interval) = getWaveConfig nextWaveType
+  let 
+    nextWaveType = getNextWaveType (currentWave gs)
+    (_, newEnemies, interval) = getWaveConfig nextWaveType
   in gs 
     { currentWave = nextWaveType 
     , waveEnemies = newEnemies
     , spawnTimer = interval 
     , timeSinceLastWave = 0
     }
-
-
 
 
 updateGame :: Float -> GameState -> GameState
@@ -114,7 +113,7 @@ updateGame delta gs
 
 moveProjectile :: Float -> Projectile -> Projectile
 moveProjectile delta proj = case projTarget proj of
-  Nothing -> proj  -- No target, shouldn't happen
+  Nothing -> proj  -- No target (shouldn't happen, just to complete the function)
   Just enemy ->
     let 
       (px, py) = projPosition proj
@@ -133,9 +132,7 @@ moveEnemies delta = map updateEnemy
   where
     updateEnemy e = e 
       { enemyPosition = moveAlongPath e delta
-      , enemyCurrentTarget = if reachedNextPoint e delta 
-                  then enemyCurrentTarget e + 1 
-                  else enemyCurrentTarget e
+      , enemyCurrentTarget = if reachedNextPoint e delta then enemyCurrentTarget e + 1 else enemyCurrentTarget e
       }
 
 moveAlongPath :: Enemy -> Float -> Position
@@ -198,13 +195,11 @@ createProjectile tower enemy = Projectile
   , projType = towerType tower
   , projTarget = Just enemy
   , projDamage = towerDamage tower
-  , projSpeed = projectileSpeed -- pixels per second
+  , projSpeed = projectileSpeed -- Pixels per frame
   }
 
 checkGameOver :: GameState -> GameState
-checkGameOver gs = if any reachedFinish (enemies gs)
-                  then gs { gameOver = True }
-                  else gs
+checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameOver = True } else gs
   where
     reachedFinish e = 
       let 

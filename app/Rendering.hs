@@ -13,15 +13,13 @@ translateGameZone pic = translate (- xOffset) (- yOffset) pic
 addTranslate :: Picture -> Picture 
 addTranslate pic = translate (tileSize/2) (tileSize/2) pic
 
--- Add these helper functions
 renderProjectiles :: [Projectile] -> Picture
 renderProjectiles = pictures . map renderProjectile
   where
     renderProjectile proj = 
       let 
         (x, y) = projPosition proj
-        color = makeColor 1 1 0 1  -- Yellow projectiles
-      in translate x y $ colorCircle color 5  -- Small circle for projectiles
+      in translate x y $ colorCircle yellow 5 
 
 renderButton :: UIElement -> Picture
 renderButton (Button pos size action label color) =
@@ -32,9 +30,6 @@ renderButton (Button pos size action label color) =
     [ translate x y $ colorRectangle color w h
     , translate (x - w / 2 + 15) y $ scale 0.1 0.1 $ text label
     ]
-
--- Add this to your imports from Types
-
 
 renderGame :: GameState -> Picture
 renderGame gs = pictures
@@ -108,10 +103,12 @@ renderUI gs = pictures
   ]
 
 renderGameOver :: Picture
-renderGameOver = translate (-100) 0 $ scale 0.3 0.3 $ color red $ text "GAME OVER"
+renderGameOver = pictures 
+  [ translate (-100) 0 $ scale 0.3 0.3 $ color red $ text "GAME OVER"
+  , translate (-200) (-100) $ scale 0.3 0.3 $ color red $ text "(press Space to restart)"
+  ]
 
--- Helper rendering functions
--- Replace with:
+
 colorRectangle :: Color -> Float -> Float -> Picture
 colorRectangle c w h = pictures [Color c $ rectangleSolid w h, Color black $ rectangleWire w h]
 
