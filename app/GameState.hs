@@ -6,17 +6,17 @@ import System.Random (mkStdGen)
 
 initialState :: [[TileType]] -> GameState
 initialState mapTiles = GameState
-    { towers = []
-    , enemies = []
-    , projectiles = []
-    , coins = initialCoins
-    , buildMode = NotBuilding
-    , tiles = mapTiles
-    , gameOver = False
-    , waveNumber = 0
-    , timeSinceLastWave = 0
-    , randomGen = mkStdGen initGen
-    }
+  { towers = []
+  , enemies = []
+  , projectiles = []
+  , coins = initialCoins
+  , buildMode = NotBuilding
+  , tiles = mapTiles
+  , gameOver = False
+  , waveNumber = 0
+  , timeSinceLastWave = 0
+  , randomGen = mkStdGen initGen
+  }
 
 -- Helper functions for state manipulation
 addTower :: Tower -> GameState -> GameState

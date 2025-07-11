@@ -1,7 +1,7 @@
 module Types
-    ( module Types
-    , Point, Picture  -- Re-export from Gloss
-    ) where
+  ( module Types
+  , Point, Picture  -- Re-export from Gloss
+  ) where
 
 import Graphics.Gloss (Point, Picture)
 import Graphics.Gloss.Data.Color
@@ -22,66 +22,66 @@ type TileCoord = (Int, Int)
 
 -- Game entities
 data TileType = Road | Buildable | Neutral | Finish | Start
-    deriving (Eq, Show)
+  deriving (Eq, Show)
 
 data TowerType = CannonTower | SlowTower | SplashTower
-    deriving (Eq, Show)
+  deriving (Eq, Show)
 
 data EnemyType = BasicEnemy
-    deriving (Eq, Show)
+  deriving (Eq, Show)
 
 data Projectile = Projectile
-    { projPosition :: Position
-    , projType :: TowerType
-    , projTarget :: Maybe Enemy  -- Target enemy
-    , projDamage :: Damage
-    , projSpeed :: Speed
-    }
+  { projPosition :: Position
+  , projType :: TowerType
+  , projTarget :: Maybe Enemy  -- Target enemy
+  , projDamage :: Damage
+  , projSpeed :: Speed
+  }
 
 data Tower = Tower
-    { towerPosition :: Position
-    , towerType :: TowerType
-    , towerDamage :: Damage
-    , towerRange :: Radius
-    , towerCooldown :: Time
-    , towerTimeSinceLastShot :: Time
-    } deriving (Eq)
+  { towerPosition :: Position
+  , towerType :: TowerType
+  , towerDamage :: Damage
+  , towerRange :: Radius
+  , towerCooldown :: Time
+  , towerTimeSinceLastShot :: Time
+  } deriving (Eq)
 
 data Enemy = Enemy
-    { enemyPosition :: Position
-    , enemyType :: EnemyType
-    , enemyHealth :: Float 
-    , enemyMaxHealth :: Float 
-    , enemySpeed :: Float
-    , enemyPath :: [Position]
-    , enemyCurrentTarget :: Int
-    , enemyValue :: Int
-    } deriving (Eq)
+  { enemyPosition :: Position
+  , enemyType :: EnemyType
+  , enemyHealth :: Float 
+  , enemyMaxHealth :: Float 
+  , enemySpeed :: Float
+  , enemyPath :: [Position]
+  , enemyCurrentTarget :: Int
+  , enemyValue :: Int
+  } deriving (Eq)
 
 data BuildMode = NotBuilding | Building TowerType
-    deriving (Eq, Show)
+  deriving (Eq, Show)
 
 data GameState = GameState
-    { towers :: [Tower]
-    , enemies :: [Enemy]
-    , projectiles :: [Projectile]
-    , coins :: Coins
-    , buildMode :: BuildMode
-    , tiles :: [[TileType]]  -- 2D grid representing the map
-    , gameOver :: Bool
-    , waveNumber :: Int
-    , timeSinceLastWave :: Time
-    , randomGen :: StdGen
-    }
+  { towers :: [Tower]
+  , enemies :: [Enemy]
+  , projectiles :: [Projectile]
+  , coins :: Coins
+  , buildMode :: BuildMode
+  , tiles :: [[TileType]]  -- 2D grid representing the map
+  , gameOver :: Bool
+  , waveNumber :: Int
+  , timeSinceLastWave :: Time
+  , randomGen :: StdGen
+  }
 
 -- In Types.hs
 data UIElement = Button
-    { btnPosition :: Position
-    , btnSize :: (Float, Float)
-    , btnAction :: GameState -> GameState
-    , btnLabel :: String
-    , btnColor :: Color
-    }
+  { btnPosition :: Position
+  , btnSize :: (Float, Float)
+  , btnAction :: GameState -> GameState
+  , btnLabel :: String
+  , btnColor :: Color
+  }
 
 startBuilding :: TowerType -> GameState -> GameState
 startBuilding towerType gs = gs { buildMode = Building towerType }

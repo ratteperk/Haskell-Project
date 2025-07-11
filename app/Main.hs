@@ -20,32 +20,32 @@ s = Start
 -- Sample map (0 = Neutral, 1 = Road, 2 = Buildable, 3 = Finish)
 sampleMap :: [[TileType]]
 sampleMap =
-    [[n, n, n, n, n, n, n, n, s, n, n, n, n],
-     [n, n, n, n, n, n, n, b, r, n, n, n, n],
-     [n, n, n, n, n, n, b, b, r, n, n, n, n], 
-     [n, n, n, n, n, b, b, b, r, n, n, n, n], 
-     [n, n, n, n, n, b, b, b, r, n, n, n, n], 
-     [n, b, b, r, r, r, r, r, r, b, n, n, n], 
-     [n, b, b, r, b, b, b, b, r, b, b, n, n], 
-     [n, r, r, r, b, b, b, b, r, b, b, b, n], 
-     [n, r, b, b, n, n, n, n, r, r, r, r, f], 
-     [n, r, b, b, n, n, n, n, n, n, n, n, n],
-     [n, r, b, b, b, b, b, n, n, n, n, n, n],
-     [n, r, r, r, r, r, r, n, n, n, n, n, n],
-     [n, n, n, n, n, n, f, n, n, n, n, n, n]]
+  [[n, n, n, n, n, n, n, n, s, n, n, n, n],
+   [n, n, n, n, n, n, n, b, r, n, n, n, n],
+   [n, n, n, n, n, n, b, b, r, n, n, n, n], 
+   [n, n, n, n, n, b, b, b, r, n, n, n, n], 
+   [n, n, n, n, n, b, b, b, r, n, n, n, n], 
+   [n, b, b, r, r, r, r, r, r, b, n, n, n], 
+   [n, b, b, r, b, b, b, b, r, b, b, n, n], 
+   [n, r, r, r, b, b, b, b, r, b, b, b, n], 
+   [n, r, b, b, n, n, n, n, r, r, r, r, f], 
+   [n, r, b, b, n, n, n, n, n, n, n, n, n],
+   [n, r, b, b, b, b, b, n, n, n, n, n, n],
+   [n, r, r, r, r, r, r, n, n, n, n, n, n],
+   [n, n, n, n, n, n, f, n, n, n, n, n, n]]
 
 main :: IO ()
 main = do
-    rndGen <- newStdGen
-    let initialGameState = (initialState sampleMap) {randomGen = rndGen}
-    playIO
-        (InWindow 
-            "Tower Defense" 
-            (windowWidth, windowHeight) 
-            (100, 100))
-        white
-        60
-        initialGameState
-        (\gs -> return $ renderGame gs)
-        (\event gs -> return $ handleInput event gs)
-        (\delta gs -> return $ updateGame delta gs) 
+  rndGen <- newStdGen
+  let initialGameState = (initialState sampleMap) {randomGen = rndGen}
+  playIO
+    (InWindow 
+      "Tower Defense" 
+      (windowWidth, windowHeight) 
+      (100, 100))
+    white
+    60
+    initialGameState
+    (\gs -> return $ renderGame gs)
+    (\event gs -> return $ handleInput event gs)
+    (\delta gs -> return $ updateGame delta gs) 
