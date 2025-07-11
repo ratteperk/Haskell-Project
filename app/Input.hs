@@ -80,7 +80,9 @@ handleInput event gs = case event of
       Building towerType -> let mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos) in
         if canBuildHere mousePosOffset gs
         then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
-        else gs
+        else case getClickedButton mousePos gs of 
+          Just button -> gs {buildMode = NotBuilding}
+          Nothing -> gs
       NotBuilding -> 
         case getClickedButton mousePos gs of
           Just button -> btnAction button gs
@@ -88,7 +90,7 @@ handleInput event gs = case event of
   _ -> gs
 
 tryBuildTower :: Position -> TowerType -> GameState -> GameState
-tryBuildTower pos towerType gs = 
+tryBuildTower pos towerType gs = if gameOver gs then gs else 
   let 
     isOccupied [] = False
     isOccupied (tower:rest)

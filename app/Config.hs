@@ -31,7 +31,7 @@ basicEnemySpeed :: Float
 basicEnemySpeed = 50.0
 
 basicEnemyValue :: Int
-basicEnemyValue = 25
+basicEnemyValue = 20
 
 strongEnemyHealth :: Float 
 strongEnemyHealth = 200.0
@@ -43,7 +43,7 @@ strongEnemyValue :: Int
 strongEnemyValue = 40
 
 bossHealth :: Float 
-bossHealth = 1000.0
+bossHealth = 1700.0
 
 bossSpeed :: Float 
 bossSpeed = 20.0
@@ -128,16 +128,16 @@ splashTowerCost :: Int
 splashTowerCost = 100
 
 cannonTowerDamage :: Float
-cannonTowerDamage = 20.0
+cannonTowerDamage = 15.0
 
 slowTowerDamage :: Float
-slowTowerDamage = 0
+slowTowerDamage = 5
 
 splashTowerDamage :: Float
-splashTowerDamage = 15
+splashTowerDamage = 30
 
 slowTowerCoef :: Float
-slowTowerCoef = 0.55
+slowTowerCoef = 0.75
 
 cannonTowerRange, slowTowerRange, splashTowerRange :: Float
 cannonTowerRange = 150
