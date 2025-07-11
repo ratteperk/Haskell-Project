@@ -13,9 +13,11 @@ initialState mapTiles = GameState
   , buildMode = NotBuilding
   , tiles = mapTiles
   , gameOver = False
-  , waveNumber = 0
   , timeSinceLastWave = 0
   , randomGen = mkStdGen initGen
+  , currentWave = BasicWave
+  , waveEnemies = []
+  , spawnTimer = 0
   }
 
 -- Helper functions for state manipulation

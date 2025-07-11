@@ -28,7 +28,7 @@ updateProjectiles delta projectiles enemies =
     isHit proj enemy = distance (projPosition proj) (enemyPosition enemy) < hitRadius
     applyEffect proj enemy = case projType proj of
       CannonTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
-      SlowTower -> enemy {enemySpeed = slowTowerCoef}
+      SlowTower -> enemy {enemySpeed = if enemySpeed enemy > 25 then  enemySpeed enemy * slowTowerCoef else enemySpeed enemy}
       SplashTower -> enemy { enemyHealth = enemyHealth enemy - projDamage proj}
     
     isUnderSplash projectile enemy =
@@ -36,26 +36,48 @@ updateProjectiles delta projectiles enemies =
       then enemy { enemyHealth = enemyHealth enemy - projDamage projectile}
       else enemy
 
+getNextWaveType :: WaveType -> WaveType
+getNextWaveType BasicWave = FirstWave
+getNextWaveType FirstWave = SecondWave
+getNextWaveType SecondWave = ThirdWave
+getNextWaveType ThirdWave = LastWave 
+getNextWaveType LastWave = BasicWave
 
-spawnEnemies :: GameState -> GameState
-spawnEnemies gs
-  | timeSinceLastWave gs > 5 && null (enemies gs) =
-    let newEnemies = replicate (waveNumber gs + 3) (createEnemy (head (getEnemyPath (tiles gs) (randomGen gs))))
-    in gs { enemies = newEnemies
-       , waveNumber = waveNumber gs + 1
-       , timeSinceLastWave = 0 }
-  | otherwise = gs
-  where
-    createEnemy startPos = Enemy
-      { enemyPosition = startPos
-      , enemyType = BasicEnemy
-      , enemyHealth = basicEnemyHealth
-      , enemyMaxHealth = basicEnemyHealth
-      , enemyValue = basicEnemyValue
-      , enemySpeed = basicEnemySpeed
-      , enemyPath = getEnemyPath (tiles gs) (randomGen gs)
-      , enemyCurrentTarget = 0
-      }
+spawnEnemies :: Float -> GameState -> GameState
+spawnEnemies dt gs
+  | timeSinceLastWave gs > 5 && null (enemies gs) && null (waveEnemies gs) = 
+    prepareNextWave gs
+  | spawnTimer gs <= 0 && not (null (waveEnemies gs)) = 
+    spawnNextEnemy gs
+  | null (enemies gs) && null (waveEnemies gs) = gs {timeSinceLastWave = timeSinceLastWave gs + dt}
+  | otherwise = gs {spawnTimer = spawnTimer gs - dt}
+
+-- let newEnemies = replicate (waveNumber gs + 3) (createEnemy (head (getEnemyPath (tiles gs) (randomGen gs))))
+    -- in gs { enemies = newEnemies
+    --    , waveNumber = waveNumber gs + 1
+    --    , timeSinceLastWave = 0 }
+
+spawnNextEnemy :: GameState -> GameState
+spawnNextEnemy gs = case waveEnemies gs of 
+  [] -> gs 
+  (x:xs) -> let (_, _, spawnInt) = getWaveConfig (currentWave gs) in gs 
+    { enemies = enemies gs ++ [x {enemyPosition = head (getEnemyPath (tiles gs) (randomGen gs))
+                                  , enemyPath = getEnemyPath (tiles gs) (randomGen gs)}]
+    , waveEnemies = xs 
+    , spawnTimer = spawnInt}
+
+prepareNextWave :: GameState -> GameState 
+prepareNextWave gs = 
+  let nextWaveType = getNextWaveType (currentWave gs)
+      (_, newEnemies, interval) = getWaveConfig nextWaveType
+  in gs 
+    { currentWave = nextWaveType 
+    , waveEnemies = newEnemies
+    , spawnTimer = interval 
+    , timeSinceLastWave = 0
+    }
+
+
 
 
 updateGame :: Float -> GameState -> GameState
@@ -81,7 +103,7 @@ updateGame delta gs
       , randomGen = newGen
       }
     updates = 
-      [ spawnEnemies
+      [ spawnEnemies delta
       , \s -> towersAttack delta s
       , checkGameOver
       ]

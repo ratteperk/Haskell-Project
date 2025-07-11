@@ -27,7 +27,7 @@ data TileType = Road | Buildable | Neutral | Finish | Start
 data TowerType = CannonTower | SlowTower | SplashTower
   deriving (Eq, Show)
 
-data EnemyType = BasicEnemy
+data EnemyType = BasicEnemy | StrongEnemy | Boss
   deriving (Eq, Show)
 
 data Projectile = Projectile
@@ -69,9 +69,12 @@ data GameState = GameState
   , buildMode :: BuildMode
   , tiles :: [[TileType]]  -- 2D grid representing the map
   , gameOver :: Bool
-  , waveNumber :: Int
   , timeSinceLastWave :: Time
   , randomGen :: StdGen
+  , currentWave :: WaveType
+  , waveEnemies :: [Enemy]
+  , spawnTimer :: Float 
+  , waveInterval :: Float
   }
 
 -- In Types.hs
@@ -82,6 +85,14 @@ data UIElement = Button
   , btnLabel :: String
   , btnColor :: Color
   }
+
+data WaveType 
+    = BasicWave 
+    | FirstWave
+    | SecondWave
+    | ThirdWave
+    | LastWave
+    deriving (Eq, Show)
 
 startBuilding :: TowerType -> GameState -> GameState
 startBuilding towerType gs = gs { buildMode = Building towerType }
