@@ -6,6 +6,7 @@ import Config
 import Types (startBuilding)
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
+import Graphics.Gloss.Juicy (loadJuicyPNG)
 
 translateGameZone :: Picture -> Picture 
 translateGameZone pic = translate (- xOffset) (- yOffset) pic
@@ -31,11 +32,11 @@ renderButton (Button pos size action label color) =
     , translate (x - w / 2 + 15) y $ scale 0.1 0.1 $ text label
     ]
 
-renderGame :: GameState -> Picture
-renderGame gs = pictures
+renderGame :: GameState -> Assets -> Picture
+renderGame gs assets = pictures
   [ addTranslate $ translateGameZone (renderMap gs)
   , addTranslate $ translateGameZone (renderTowers (towers gs))
-  , translateGameZone (renderEnemies (enemies gs))
+  , translateGameZone (renderEnemies (enemies gs) assets)
   , translateGameZone (renderProjectiles (projectiles gs))
   , renderUI gs
   , if gameOver gs then renderGameOver else blank
@@ -69,16 +70,21 @@ renderTowers = pictures . map renderTower
         ]
       where pos = towerPosition tower
 
-renderEnemies :: [Enemy] -> Picture
-renderEnemies = pictures . map renderEnemy
+renderEnemies :: [Enemy] -> Assets -> Picture
+renderEnemies ens assets = pictures (map renderEnemy ens)
   where
     renderEnemy enemy = pictures
-      [ translate x y $ color (enemyColor $ enemyType enemy) $ circleSolid 15  -- Enemy body
+      [ translate x y $ color (enemyColor $ enemyType enemy) $ (scale 0.03 0.03 enemyBody)  -- Enemy body
       , translate x (y - 20) $ healthBar (enemyHealth enemy) (enemyMaxHealth enemy)
       ]
       where
         (x, y) = enemyPosition enemy
         
+        enemyBody = case enemyType enemy of 
+          BasicEnemy -> basicEnemyImg assets
+          StrongEnemy -> strongEnemyImg assets 
+          Boss -> bossImg assets
+
         healthBar current max =
           let 
             width = 30
@@ -114,3 +120,17 @@ colorRectangle c w h = pictures [Color c $ rectangleSolid w h, Color black $ rec
 
 colorCircle :: Color -> Float -> Picture
 colorCircle c r = Color c $ circleSolid r
+
+loadPNG :: FilePath -> IO Picture
+loadPNG path = do
+    mImg <- loadJuicyPNG path 
+    case mImg of
+        Just img -> return img
+        Nothing  -> error $ "Failed to load PNG: " ++ path
+
+loadAssets :: IO Assets
+loadAssets = do
+    basicEnemy <- loadPNG "assets/basicEnemy.png"
+    strongEnemy <- loadPNG "assets/strongEnemy.png"
+    boss <- loadPNG "assets/boss.png"
+    return Assets {basicEnemyImg = basicEnemy, strongEnemyImg = strongEnemy, bossImg = boss}

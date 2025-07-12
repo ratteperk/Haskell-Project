@@ -90,5 +90,11 @@ data WaveType
   | LastWave
   deriving (Eq, Show)
 
+data Assets = Assets
+    { basicEnemyImg :: Picture
+    , strongEnemyImg :: Picture
+    , bossImg :: Picture
+    }
+
 startBuilding :: TowerType -> GameState -> GameState
 startBuilding towerType gs = gs { buildMode = Building towerType }

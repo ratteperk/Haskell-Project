@@ -14,6 +14,8 @@ import System.Random (randomR, mkStdGen, newStdGen)
 main :: IO ()
 main = do
   rndGen <- newStdGen
+  assets <- loadAssets
+
   let initialGameState = (initialState sampleMap) {randomGen = rndGen}
   playIO
     (InWindow 
@@ -23,7 +25,7 @@ main = do
     white
     60
     initialGameState
-    (\gs -> return $ renderGame gs)
+    (\gs -> return $ renderGame gs assets)
     (\event gs -> return $ handleInput event gs)
     (\delta gs -> return $ updateGame delta gs) 
     

@@ -25,5 +25,6 @@ executable Haskell-Project
                      , gloss >=1.13
                      , GLUT >=2.7
                      , random >=1.2 && <1.3
+                     , gloss-juicy >=0.1
   hs-source-dirs:      app
   default-language:    Haskell2010
