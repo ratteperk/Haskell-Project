@@ -183,3 +183,71 @@ initGen = 2 -- Constant to initialize generator field in initialState (although 
 
 initialCoins :: Int
 initialCoins = 200
+
+n, r, b, f :: TileType
+n = Neutral 
+r = Road 
+b = Buildable 
+f = Finish
+s = Start
+
+sampleMap1, sampleMap2, sampleMap3 :: [[TileType]]
+sampleMap1 =
+  [[n, n, n, n, n, n, n, n, s, n, n, n, n],
+   [n, n, n, n, n, n, n, b, r, n, n, n, n],
+   [n, n, n, n, n, n, b, b, r, n, n, n, n], 
+   [n, n, n, n, n, b, b, b, r, n, n, n, n], 
+   [n, n, n, n, n, b, b, b, r, n, n, n, n], 
+   [n, b, b, r, r, r, r, r, r, b, n, n, n], 
+   [n, b, b, r, b, b, b, b, r, b, b, n, n], 
+   [n, r, r, r, b, b, b, b, r, b, b, b, n], 
+   [n, r, b, b, n, n, n, n, r, r, r, r, f], 
+   [n, r, b, b, n, n, n, n, n, n, n, n, n],
+   [n, r, b, b, b, b, b, n, n, n, n, n, n],
+   [n, r, r, r, r, r, r, n, n, n, n, n, n],
+   [n, n, n, n, n, n, f, n, n, n, n, n, n]]
+   
+sampleMap2 = [[s, f]]
+sampleMap3 = [[s, f]]
+
+menuButtons :: [UIElement]
+menuButtons = [ Button { btnPosition = (-200, 0)
+          , btnSize = (150, 100)
+          , btnAction = startMap sampleMap1
+          , btnLabel = "Easy map"
+          , btnColor = blue
+          }
+      , Button { btnPosition = (0, 0)
+          , btnSize = (150, 100)
+          , btnAction = startMap sampleMap2
+          , btnLabel = "Normal map"
+          , btnColor = blue
+          }
+      , Button { btnPosition = (200, 0)
+          , btnSize = (150, 100)
+          , btnAction = startMap sampleMap3
+          , btnLabel = "Hard map"
+          , btnColor = blue
+          }
+        ]
+
+gameButtons :: [UIElement]
+gameButtons = [ Button { btnPosition = (-300, -250)
+          , btnSize = (100, 50)
+          , btnAction = startBuilding CannonTower
+          , btnLabel = "Cannon"
+          , btnColor = blue
+          }
+      , Button { btnPosition = (-150, -250)
+          , btnSize = (100, 50)
+          , btnAction = startBuilding SlowTower
+          , btnLabel = "Slow"
+          , btnColor = orange
+          }
+      , Button { btnPosition = (0, -250)
+          , btnSize = (100, 50)
+          , btnAction = startBuilding SplashTower
+          , btnLabel = "Slow"
+          , btnColor = violet
+          }
+      ]

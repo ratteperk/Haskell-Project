@@ -73,25 +73,33 @@ posToTile (x, y) =
   (floor (x / tileSize), floor (y / tileSize))
 
 handleInput :: Event -> GameState -> GameState
-handleInput event gs = case event of
-  EventKey (MouseButton LeftButton) Down _ mousePos ->
-    case buildMode gs of
-      Building towerType -> let mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos) in
-        if canBuildHere mousePosOffset gs
-        then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
-        else case getClickedButton mousePos gs of 
-          Just button -> gs {buildMode = NotBuilding}
-          Nothing -> gs
-      NotBuilding -> 
-        case getClickedButton mousePos gs of
-          Just button -> btnAction button gs
-          Nothing -> gs
-  EventKey (SpecialKey KeySpace) Down _ _ ->
-    if gameOver gs then (initialState sampleMap) {randomGen = randomGen gs} else gs
-  _ -> gs
+handleInput event gs = case gameState gs of 
+  Menu -> case event of 
+    EventKey (MouseButton LeftButton) Down _ mousePos ->
+      case getClickedButton mousePos gs of 
+        Just button -> btnAction button gs
+        Nothing -> gs
+    _ -> gs
+
+  _ -> case event of
+    EventKey (MouseButton LeftButton) Down _ mousePos ->
+      case buildMode gs of
+        Building towerType -> let mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos) in
+          if canBuildHere mousePosOffset gs
+          then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
+          else case getClickedButton mousePos gs of 
+            Just button -> gs {buildMode = NotBuilding}
+            Nothing -> gs
+        NotBuilding -> 
+          case getClickedButton mousePos gs of
+            Just button -> btnAction button gs
+            Nothing -> gs
+    EventKey (SpecialKey KeySpace) Down _ _ ->
+      if ((gameState gs) == GameOver) then (initialState (tiles gs)) {randomGen = randomGen gs} else gs
+    _ -> gs
 
 tryBuildTower :: Position -> TowerType -> GameState -> GameState
-tryBuildTower pos towerType gs = if gameOver gs then gs else 
+tryBuildTower pos towerType gs = if ((gameState gs) == GameOver) then gs else 
   let 
     isOccupied [] = False
     isOccupied (tower:rest)
@@ -103,29 +111,9 @@ tryBuildTower pos towerType gs = if gameOver gs then gs else
 
 
 getClickedButton :: Position -> GameState -> Maybe UIElement
-getClickedButton pos gs = 
-  let 
-    buttons = 
-      [ Button { btnPosition = (-300, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding CannonTower
-          , btnLabel = "Cannon"
-          , btnColor = blue
-          }
-      , Button { btnPosition = (-150, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding SlowTower
-          , btnLabel = "Slow"
-          , btnColor = orange
-          }
-      , Button { btnPosition = (0, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding SplashTower
-          , btnLabel = "Slow"
-          , btnColor = violet
-          }
-      ]
-  in find (isPointInButton pos) buttons
+getClickedButton pos gs = case gameState gs of
+  Menu -> find (isPointInButton pos) menuButtons
+  _ -> find (isPointInButton pos) gameButtons
 
 isPointInButton :: Position -> UIElement -> Bool
 isPointInButton (px, py) button =

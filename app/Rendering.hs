@@ -33,14 +33,16 @@ renderButton (Button pos size action label color) =
     ]
 
 renderGame :: GameState -> Assets -> Picture
-renderGame gs assets = pictures
-  [ addTranslate $ translateGameZone (renderMap gs)
-  , addTranslate $ translateGameZone (renderTowers (towers gs))
-  , translateGameZone (renderEnemies (enemies gs) assets)
-  , translateGameZone (renderProjectiles (projectiles gs))
-  , renderUI gs
-  , if gameOver gs then renderGameOver else blank
-  ]
+renderGame gs assets = case gameState gs of 
+  Menu -> renderGameMenu gs
+  _ -> pictures
+    [ addTranslate $ translateGameZone (renderMap gs)
+    , addTranslate $ translateGameZone (renderTowers (towers gs))
+    , translateGameZone (renderEnemies (enemies gs) assets)
+    , translateGameZone (renderProjectiles (projectiles gs))
+    , renderUI gs
+    , if (gameState gs) == GameOver then renderGameOver else blank
+    ]
 
 renderMap :: GameState -> Picture
 renderMap gs = pictures $ concatMap renderRow (zip [0..] (tiles gs))
@@ -113,6 +115,10 @@ renderGameOver = pictures
   [ translate (-100) 0 $ scale 0.3 0.3 $ color red $ text "GAME OVER"
   , translate (-200) (-100) $ scale 0.3 0.3 $ color red $ text "(press Space to restart)"
   ]
+
+renderGameMenu :: GameState -> Picture 
+renderGameMenu gs = pictures ((color yellow $ rectangleSolid 2000 2000) : (map renderButton menuButtons))
+  
 
 
 colorRectangle :: Color -> Float -> Float -> Picture

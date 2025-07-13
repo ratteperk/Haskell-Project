@@ -16,7 +16,7 @@ main = do
   rndGen <- newStdGen
   assets <- loadAssets
 
-  let initialGameState = (initialState sampleMap) {randomGen = rndGen}
+  let initialGameState = (initialState sampleMap1) {randomGen = rndGen}
   playIO
     (InWindow 
       "Tower Defense" 

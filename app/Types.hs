@@ -27,6 +27,9 @@ data TowerType = CannonTower | SlowTower | SplashTower
 data EnemyType = BasicEnemy | StrongEnemy | Boss
   deriving (Eq, Show)
 
+data States = Menu | GameProcess | GameOver
+  deriving (Eq, Show)
+
 data Projectile = Projectile
   { projPosition :: Position
   , projType :: TowerType
@@ -65,7 +68,7 @@ data GameState = GameState
   , coins :: Coins
   , buildMode :: BuildMode
   , tiles :: [[TileType]] 
-  , gameOver :: Bool
+  , gameState :: States
   , timeSinceLastWave :: Time
   , randomGen :: StdGen
   , currentWave :: WaveType
@@ -98,3 +101,6 @@ data Assets = Assets
 
 startBuilding :: TowerType -> GameState -> GameState
 startBuilding towerType gs = gs { buildMode = Building towerType }
+
+startMap :: [[TileType]] -> GameState -> GameState 
+startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }

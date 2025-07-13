@@ -80,9 +80,11 @@ prepareNextWave gs =
 
 
 updateGame :: Float -> GameState -> GameState
-updateGame delta gs 
-  | gameOver gs = gs
-  | otherwise = foldl (\acc f -> f acc) updatedGS updates
+updateGame delta gs = case gameState gs of 
+  Menu -> gs
+  GameProcess -> foldl (\acc f -> f acc) updatedGS updates
+  GameOver -> gs
+
   where
     -- Update projectiles and enemies with collision
     (remainingProjectiles, updatedEnemies) = updateProjectiles delta (projectiles gs) (enemies gs)
@@ -199,7 +201,7 @@ createProjectile tower enemy = Projectile
   }
 
 checkGameOver :: GameState -> GameState
-checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameOver = True } else gs
+checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameState = GameOver } else gs
   where
     reachedFinish e = 
       let 
