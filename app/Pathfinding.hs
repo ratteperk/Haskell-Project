@@ -11,14 +11,14 @@ tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * til
 
 -- Precompute path for enemies based on the map and current random generator state 
 getEnemyPath :: [[TileType]] -> StdGen -> [Position]
-getEnemyPath tiles gen = findRoad tiles (findStart tiles) gen 
+getEnemyPath tiles gen = findRoad tiles (findStart tiles gen) gen 
 
-findStart :: [[TileType]] -> Position
-findStart tiles = 
+findStart :: [[TileType]] -> StdGen -> Position
+findStart tiles gen = 
   case [(y, x) | y <- [0..length tiles - 1],
         x <- [0..length (tiles !! y) - 1],
         tiles !! y !! x == Start] of 
-    (a: _) -> tileToPos a
+    arr -> tileToPos (arr !! (generateRandom 0 (length arr - 1) gen))
     [] -> error "No start tile found"
 
 lastEl :: [a] -> a

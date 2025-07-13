@@ -192,7 +192,17 @@ f = Finish
 s = Start
 
 sampleMap1, sampleMap2, sampleMap3 :: [[TileType]]
-sampleMap1 =
+   
+sampleMap1 = 
+  [[n, s, b, b, b, b, b],
+   [b, r, b, r, r, r, b],
+   [b, r, b, r, b, r, b],
+   [b, r, b, r, b, r, b],
+   [b, r, b, r, b, r, b],
+   [b, r, r, r, b, r, b],
+   [b, b, b, b, b, f, n]]
+
+sampleMap2 =
   [[n, n, n, n, n, n, n, n, s, n, n, n, n],
    [n, n, n, n, n, n, n, b, r, n, n, n, n],
    [n, n, n, n, n, n, b, b, r, n, n, n, n], 
@@ -206,9 +216,23 @@ sampleMap1 =
    [n, r, b, b, b, b, b, n, n, n, n, n, n],
    [n, r, r, r, r, r, r, n, n, n, n, n, n],
    [n, n, n, n, n, n, f, n, n, n, n, n, n]]
-   
-sampleMap2 = [[s, f]]
-sampleMap3 = [[s, f]]
+
+sampleMap3 = 
+  [[n, n, n, s, n, n, n, n, n, n, n, n, n, n, n],
+  [n, n, n, r, n, n, n, n, n, n, n, n, n, n, n],
+  [n, n, n, r, n, n, n, n, n, n, n, n, n, n, n],
+  [s, r, b, r, r, r, r, r, r, r, r, r, r, r, n],
+  [n, r, b, n, n, n, n, b, b, b, b, b, b, r, n],
+  [n, r, r, r, r, n, n, b, b, b, b, b, b, r, b],
+  [n, b, b, b, r, n, n, b, b, b, b, n, n, r, b],
+  [n, b, b, b, r, n, n, b, b, b, n, n, n, r, b],
+  [n, b, b, b, r, n, n, b, b, n, n, n, n, r, f],
+  [n, n, n, n, r, n, n, b, n, n, n, n, n, n, n],
+  [n, n, n, n, r, n, n, n, n, n, n, n, n, n, n],
+  [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
+  [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
+  [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
+  [n, n, n, n, f, n, n, n, n, n, n, n, n, n, n]]
 
 menuButtons :: [UIElement]
 menuButtons = [ Button { btnPosition = (-200, 0)
