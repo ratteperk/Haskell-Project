@@ -1,9 +1,6 @@
-module Types
-  ( module Types
-  , Point, Picture 
-  ) where
+module Types where
 
-import Graphics.Gloss (Point, Picture)
+import Graphics.Gloss (Picture)
 import Graphics.Gloss.Data.Color
 import System.Random (randomR, mkStdGen, StdGen)
 

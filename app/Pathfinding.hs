@@ -17,9 +17,10 @@ findStart :: [[TileType]] -> StdGen -> Position
 findStart tiles gen = 
   case [(y, x) | y <- [0..length tiles - 1],
         x <- [0..length (tiles !! y) - 1],
-        tiles !! y !! x == Start] of 
+        tiles !! y !! x == Start] of
+    [] -> error "No start tile found" 
     arr -> tileToPos (arr !! (generateRandom 0 (length arr - 1) gen))
-    [] -> error "No start tile found"
+    
 
 lastEl :: [a] -> a
 lastEl [x] = x
