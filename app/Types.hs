@@ -58,7 +58,7 @@ data Enemy = Enemy
   , enemyValue :: Int
   } deriving (Eq)
 
-data BuildMode = NotBuilding | Building TowerType
+data BuildMode = NotBuilding | Building TowerType | Removing
   deriving (Eq, Show)
 
 data GameState = GameState
@@ -101,6 +101,9 @@ data Assets = Assets
 
 startBuilding :: TowerType -> GameState -> GameState
 startBuilding towerType gs = gs { buildMode = Building towerType }
+
+enableRemoving :: GameState -> GameState
+enableRemoving gs = gs { buildMode = Removing}
 
 startMap :: [[TileType]] -> GameState -> GameState 
 startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }

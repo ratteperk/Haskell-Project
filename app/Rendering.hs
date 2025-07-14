@@ -97,18 +97,13 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
             ]
 
 renderUI :: GameState -> Picture
-renderUI gs = pictures
-  [ translate (-350) 250 $ scale 0.2 0.2 $ text ("Coins: " ++ show (coins gs))
-  , renderButton $ Button (-300, -250) (100, 50) (startBuilding CannonTower) 
-    ("Cannon (" ++ show cannonTowerCost ++ ")") blue
-  , renderButton $ Button (-150, -250) (100, 50) (startBuilding SlowTower) 
-    ("Slow (" ++ show slowTowerCost ++ ")") orange
-  , renderButton $ Button (0, -250) (100, 50) (startBuilding SplashTower) 
-    ("Splash (" ++ show splashTowerCost ++ ")") violet
-  , case buildMode gs of
-    Building _ -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on buildable tile to place tower"
-    _ -> blank
-  ]
+renderUI gs = pictures $ 
+  [ translate (-350) 250 $ scale 0.2 0.2 $ text ("Coins: " ++ show (coins gs)),
+    case buildMode gs of
+      Building _ -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on buildable tile to place tower"
+      Removing -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on tower that you want to remove"
+      _ -> blank
+  ] ++ map renderButton gameButtons
 
 renderGameOver :: Picture
 renderGameOver = pictures 

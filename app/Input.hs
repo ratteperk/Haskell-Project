@@ -90,13 +90,40 @@ handleInput event gs = case gameState gs of
           else case getClickedButton mousePos gs of 
             Just button -> gs {buildMode = NotBuilding}
             Nothing -> gs
+
         NotBuilding -> 
           case getClickedButton mousePos gs of
             Just button -> btnAction button gs
             Nothing -> gs
+
+        Removing -> 
+          let 
+            mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos)
+            getPointingTower = find (\t -> towerPosition t == (tileCenterPosition (posToTile mousePosOffset)))
+          in
+            if not $ canBuildHere mousePosOffset gs
+            then gs {
+                coins = case getPointingTower $ towers gs of
+                  Nothing -> coins gs
+                  Just tower -> div (getTowerCost $ towerType tower) 2 + coins gs,
+                towers = 
+                  filter (\t -> towerPosition t /= (tileCenterPosition (posToTile mousePosOffset))) $ towers gs,
+                buildMode = NotBuilding
+              }
+            else case getClickedButton mousePos gs of
+              Just button -> btnAction button gs
+              Nothing -> gs
+
+
     EventKey (SpecialKey KeySpace) Down _ _ ->
       if ((gameState gs) == GameOver) then (initialState (tiles gs)) {randomGen = randomGen gs} else gs
+
     _ -> gs
+
+getTowerCost :: TowerType -> Int
+getTowerCost CannonTower = cannonTowerCost
+getTowerCost SlowTower = slowTowerCost
+getTowerCost SplashTower = splashTowerCost
 
 tryBuildTower :: Position -> TowerType -> GameState -> GameState
 tryBuildTower pos towerType gs = if ((gameState gs) == GameOver) then gs else 

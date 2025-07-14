@@ -259,19 +259,26 @@ gameButtons :: [UIElement]
 gameButtons = [ Button { btnPosition = (-300, -250)
           , btnSize = (100, 50)
           , btnAction = startBuilding CannonTower
-          , btnLabel = "Cannon"
+          , btnLabel = "Cannon (" ++ show cannonTowerCost ++ ")"
           , btnColor = blue
           }
       , Button { btnPosition = (-150, -250)
           , btnSize = (100, 50)
           , btnAction = startBuilding SlowTower
-          , btnLabel = "Slow"
+          , btnLabel = "Slow (" ++ show slowTowerCost ++ ")"
           , btnColor = orange
           }
       , Button { btnPosition = (0, -250)
           , btnSize = (100, 50)
           , btnAction = startBuilding SplashTower
-          , btnLabel = "Slow"
+          , btnLabel = "Splash (" ++ show splashTowerCost ++ ")"
           , btnColor = violet
           }
+      , Button {
+          btnPosition = (300, -250)
+          , btnSize = (130, 50)
+          , btnAction = enableRemoving
+          , btnLabel = "Remove building"
+          , btnColor = red
+      }
       ]
