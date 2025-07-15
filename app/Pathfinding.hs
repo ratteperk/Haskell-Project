@@ -27,7 +27,7 @@ lastEl [x] = x
 lastEl (x:xs) = lastEl xs
 
 generateRandom :: Int -> Int -> StdGen -> Int 
-generateRandom l r gen = fst $ randomR (l, r) gen
+generateRandom l r gen = fst (randomR (l, r) gen)
 
 findRoad :: [[TileType]] -> Position -> StdGen -> [Position]
 findRoad tiles start gen = helper start []

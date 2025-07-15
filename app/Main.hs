@@ -3,7 +3,6 @@ module Main where
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Types
-import GameState
 import Rendering
 import Input
 import Logic
@@ -23,9 +22,9 @@ main = do
       (windowWidth, windowHeight) 
       (100, 100))
     white
-    60
+    fps
     initialGameState
-    (\gs -> return $ renderGame gs assets)
-    (\event gs -> return $ handleInput event gs)
-    (\delta gs -> return $ updateGame delta gs) 
+    (\gs -> return (renderGame gs assets))
+    (\event gs -> return (handleInput event gs))
+    (\delta gs -> return (updateGame delta gs)) 
     

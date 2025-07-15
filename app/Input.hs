@@ -3,7 +3,6 @@ module Input where
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..), SpecialKey(..))
 import Types
 import Config
-import GameState
 import Types (startBuilding)
 import Data.List (find)
 import Graphics.Gloss.Data.Color (blue, orange, violet)
@@ -13,26 +12,27 @@ getTile grid x y
   | y < 0 || y >= length grid = Nothing
   | x < 0 || x >= length row = Nothing
   | otherwise = Just (row !! x)
-  where row = grid !! y
+    where
+      row = grid !! y
 
-canBuildHere :: Position -> GameState -> Bool
-canBuildHere (x, y) gs = isBuildable && enoughCoins
+canBuildTowerHere :: Position -> GameState -> Bool
+canBuildTowerHere coords gs = isBuildable && enoughCoins
   where
-  tileX = floor (x / tileSize)
-  tileY = floor (y / tileSize)
-  tile = getTile (tiles gs) tileX tileY
+    (tileX, tileY) = posToTile coords
+    tile = getTile (tiles gs) tileX tileY
 
-  isBuildable = case tile of
-    Nothing -> False
-    Just t -> t == Buildable
+    isBuildable = case tile of
+      Nothing -> False
+      Just t -> t == Buildable
 
-  enoughCoins = case tile of
-    Nothing -> False
-    _ -> case buildMode gs of
-        Building CannonTower -> coins gs >= cannonTowerCost
-        Building SlowTower -> coins gs >= slowTowerCost
-        Building SplashTower -> coins gs >= splashTowerCost
-        _ -> False
+    enoughCoins = case tile of
+      Nothing -> False
+      _ -> case buildMode gs of
+          Building CannonTower -> coins gs >= cannonTowerCost
+          Building SlowTower -> coins gs >= slowTowerCost
+          Building SplashTower -> coins gs >= splashTowerCost
+          _ -> False
+
 
 tileCenterPosition :: (Int, Int) -> Position
 tileCenterPosition (tileX, tileY) =
@@ -81,44 +81,71 @@ handleInput event gs = case gameState gs of
         Nothing -> gs
     _ -> gs
 
-  _ -> case event of
+  GameOver -> case event of
+    EventKey (SpecialKey KeySpace) Down _ _ -> (initialState (tiles gs)) {randomGen = randomGen gs}
+    _ -> gs
+
+  GameProcess -> case event of
     EventKey (MouseButton LeftButton) Down _ mousePos ->
       case buildMode gs of
-        Building towerType -> let mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos) in
-          if canBuildHere mousePosOffset gs
-          then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
-          else case getClickedButton mousePos gs of 
-            Just button -> gs {buildMode = NotBuilding}
-            Nothing -> gs
 
-        NotBuilding -> 
-          case getClickedButton mousePos gs of
-            Just button -> btnAction button gs
-            Nothing -> gs
+        Building towerType ->
+          if canBuildTowerHere mousePosOffset gs
+          then tryBuildTower (tileCenterPosition (posToTile mousePosOffset)) towerType gs
+          else checkButton
+
+        NotBuilding -> checkButton
 
         Removing -> 
-          let 
-            mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos)
+          let
             getPointingTower = find (\t -> towerPosition t == (tileCenterPosition (posToTile mousePosOffset)))
           in
-            if not $ canBuildHere mousePosOffset gs
+            if not (canBuildTowerHere mousePosOffset gs)
             then gs {
-                coins = case getPointingTower $ towers gs of
+                coins = case getPointingTower (towers gs) of
                   Nothing -> coins gs
-                  Just tower -> div (getTowerCost $ towerType tower) 2 + coins gs,
+                  Just tower -> div (getTowerCost (towerType tower)) 2 + coins gs,
                 towers = 
-                  filter (\t -> towerPosition t /= (tileCenterPosition (posToTile mousePosOffset))) $ towers gs,
+                  filter (\t -> towerPosition t /= (tileCenterPosition (posToTile mousePosOffset))) (towers gs),
                 buildMode = NotBuilding
               }
-            else case getClickedButton mousePos gs of
-              Just button -> btnAction button gs
-              Nothing -> gs
+            else checkButton
 
+        GatesBuilding ->
+          case isRoadTile (tileCenterPosition (posToTile mousePosOffset)) gs of
+            True -> tryBuildGates (tileCenterPosition (posToTile mousePosOffset)) gs
+            False -> checkButton
+  
+      where 
+        mousePosOffset = (xOffset + fst mousePos, yOffset + snd mousePos)
 
-    EventKey (SpecialKey KeySpace) Down _ _ ->
-      if ((gameState gs) == GameOver) then (initialState (tiles gs)) {randomGen = randomGen gs} else gs
+        checkButton = case getClickedButton mousePos gs of
+          Just button -> btnAction button gs
+          Nothing -> gs
 
     _ -> gs
+
+tryBuildGates :: Position -> GameState -> GameState
+tryBuildGates pos gs =
+  let
+    newGates = Gates 
+      { gatesDamage = gatesDefaultDamage
+      , gatesHealth = gatesDefaultHealth
+      , gatesPosition = pos
+      }
+    isOccupied [] = False
+    isOccupied (gates:rest)
+      | gatesPosition gates == pos = True
+      | otherwise = isOccupied rest
+  in case isOccupied (gates gs) of
+    True -> gs
+    False -> case coins gs >= gatesCost of
+      False -> gs
+      True -> gs
+        { coins = coins gs - gatesCost
+        , gates = newGates : gates gs
+        , buildMode = NotBuilding
+        }
 
 getTowerCost :: TowerType -> Int
 getTowerCost CannonTower = cannonTowerCost
@@ -126,7 +153,7 @@ getTowerCost SlowTower = slowTowerCost
 getTowerCost SplashTower = splashTowerCost
 
 tryBuildTower :: Position -> TowerType -> GameState -> GameState
-tryBuildTower pos towerType gs = if ((gameState gs) == GameOver) then gs else 
+tryBuildTower pos towerType gs =
   let 
     isOccupied [] = False
     isOccupied (tower:rest)
@@ -136,6 +163,15 @@ tryBuildTower pos towerType gs = if ((gameState gs) == GameOver) then gs else
     True -> gs
     _ -> buildTower pos towerType gs
 
+isRoadTile :: Position -> GameState -> Bool
+isRoadTile coords gs = isRoadTile
+  where
+    (tileX, tileY) = posToTile coords
+    tile = getTile (tiles gs) tileX tileY
+
+    isRoadTile = case tile of
+      Nothing -> False
+      Just t -> t == Road
 
 getClickedButton :: Position -> GameState -> Maybe UIElement
 getClickedButton pos gs = case gameState gs of

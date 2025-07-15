@@ -35,6 +35,12 @@ data Projectile = Projectile
   , projSpeed :: Speed
   }
 
+data Gates = Gates 
+  { gatesHealth :: Health
+  , gatesDamage :: Damage -- per frame
+  , gatesPosition :: Position
+  }
+
 data Tower = Tower
   { towerPosition :: Position
   , towerType :: TowerType
@@ -55,11 +61,12 @@ data Enemy = Enemy
   , enemyValue :: Int
   } deriving (Eq)
 
-data BuildMode = NotBuilding | Building TowerType | Removing
+data BuildMode = NotBuilding | Building TowerType | Removing | GatesBuilding
   deriving (Eq, Show)
 
 data GameState = GameState
   { towers :: [Tower]
+  , gates :: [Gates]
   , enemies :: [Enemy]
   , projectiles :: [Projectile]
   , coins :: Coins
@@ -72,7 +79,6 @@ data GameState = GameState
   , waveEnemies :: [Enemy]
   , spawnTimer :: Float
   }
-
 
 data UIElement = Button
   { btnPosition :: Position
@@ -101,6 +107,9 @@ startBuilding towerType gs = gs { buildMode = Building towerType }
 
 enableRemoving :: GameState -> GameState
 enableRemoving gs = gs { buildMode = Removing}
+
+gatesBuilding :: GameState -> GameState
+gatesBuilding gs = gs {buildMode = GatesBuilding}
 
 startMap :: [[TileType]] -> GameState -> GameState 
 startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }

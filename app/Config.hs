@@ -181,8 +181,20 @@ initGen :: Int
 initGen = 2 -- Constant to initialize generator field in initialState (although in Main 
             -- generator initial value is generated in runtime)
 
+gatesCost :: Int
+gatesCost = 300
+
+gatesDefaultDamage :: Float
+gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- per tic
+
+gatesDefaultHealth :: Float
+gatesDefaultHealth = 700
+
 initialCoins :: Int
 initialCoins = 200
+
+fps :: Int
+fps = 60
 
 n, r, b, f :: TileType
 n = Neutral 
@@ -234,51 +246,79 @@ sampleMap3 =
   [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
   [n, n, n, n, f, n, n, n, n, n, n, n, n, n, n]]
 
+initialState :: [[TileType]] -> GameState
+initialState mapTiles = GameState
+  { towers = []
+  , gates = []
+  , enemies = []
+  , projectiles = []
+  , coins = initialCoins
+  , buildMode = NotBuilding
+  , tiles = mapTiles
+  , gameState = Menu
+  , timeSinceLastWave = 0
+  , randomGen = mkStdGen initGen
+  , currentWave = BasicWave      
+  , waveEnemies = []
+  , spawnTimer = 0
+  }
+
 menuButtons :: [UIElement]
-menuButtons = [ Button { btnPosition = (-200, 0)
-          , btnSize = (150, 100)
-          , btnAction = startMap sampleMap1
-          , btnLabel = "Easy map"
-          , btnColor = blue
-          }
-      , Button { btnPosition = (0, 0)
-          , btnSize = (150, 100)
-          , btnAction = startMap sampleMap2
-          , btnLabel = "Normal map"
-          , btnColor = blue
-          }
-      , Button { btnPosition = (200, 0)
-          , btnSize = (150, 100)
-          , btnAction = startMap sampleMap3
-          , btnLabel = "Hard map"
-          , btnColor = blue
-          }
-        ]
+menuButtons = [ Button 
+                  { btnPosition = (-200, 0)
+                  , btnSize = (150, 100)
+                  , btnAction = startMap sampleMap1
+                  , btnLabel = "Easy map"
+                  , btnColor = blue
+                  }
+              , Button 
+                  { btnPosition = (0, 0)
+                  , btnSize = (150, 100)
+                  , btnAction = startMap sampleMap2
+                  , btnLabel = "Normal map"
+                  , btnColor = blue
+                  }
+              , Button 
+                  { btnPosition = (200, 0)
+                  , btnSize = (150, 100)
+                  , btnAction = startMap sampleMap3
+                  , btnLabel = "Hard map"
+                  , btnColor = blue
+                  }]
 
 gameButtons :: [UIElement]
-gameButtons = [ Button { btnPosition = (-300, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding CannonTower
-          , btnLabel = "Cannon (" ++ show cannonTowerCost ++ ")"
-          , btnColor = blue
-          }
-      , Button { btnPosition = (-150, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding SlowTower
-          , btnLabel = "Slow (" ++ show slowTowerCost ++ ")"
-          , btnColor = orange
-          }
-      , Button { btnPosition = (0, -250)
-          , btnSize = (100, 50)
-          , btnAction = startBuilding SplashTower
-          , btnLabel = "Splash (" ++ show splashTowerCost ++ ")"
-          , btnColor = violet
-          }
-      , Button {
-          btnPosition = (300, -250)
-          , btnSize = (130, 50)
-          , btnAction = enableRemoving
-          , btnLabel = "Remove building"
-          , btnColor = red
-      }
-      ]
+gameButtons = [ Button 
+                { btnPosition = (-300, -250)
+                , btnSize = (100, 50)
+                , btnAction = startBuilding CannonTower
+                , btnLabel = "Cannon (" ++ show cannonTowerCost ++ ")"
+                , btnColor = blue
+                }
+              , Button 
+                  { btnPosition = (-150, -250)
+                  , btnSize = (100, 50)
+                  , btnAction = startBuilding SlowTower
+                  , btnLabel = "Slow (" ++ show slowTowerCost ++ ")"
+                  , btnColor = orange
+                  }
+              , Button 
+                  { btnPosition = (0, -250)
+                  , btnSize = (100, 50)
+                  , btnAction = startBuilding SplashTower
+                  , btnLabel = "Splash (" ++ show splashTowerCost ++ ")"
+                  , btnColor = violet
+                  }
+              , Button 
+                {  btnPosition = (300, -250)
+                  , btnSize = (130, 50)
+                  , btnAction = enableRemoving
+                  , btnLabel = "Remove building"
+                  , btnColor = red
+                }
+              , Button 
+              { btnPosition = (150, -250)
+                , btnSize = (100, 50)
+                , btnAction = gatesBuilding
+                , btnLabel = "Gates (" ++ show gatesCost ++ ")"
+                , btnColor = magenta
+              }]

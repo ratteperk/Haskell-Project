@@ -15,7 +15,6 @@ common warnings
 executable Haskell-Project
   main-is:             Main.hs
   other-modules:       Config
-                     GameState
                      Input
                      Logic
                      Pathfinding

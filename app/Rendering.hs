@@ -20,7 +20,7 @@ renderProjectiles = pictures . map renderProjectile
     renderProjectile proj = 
       let 
         (x, y) = projPosition proj
-      in translate x y $ colorCircle yellow 5 
+      in translate x y (colorCircle yellow 5)
 
 renderButton :: UIElement -> Picture
 renderButton (Button pos size action label color) =
@@ -28,16 +28,17 @@ renderButton (Button pos size action label color) =
     (x, y) = pos
     (w, h) = size
   in pictures
-    [ translate x y $ colorRectangle color w h
-    , translate (x - w / 2 + 15) y $ scale 0.1 0.1 $ text label
+    [ translate x y (colorRectangle color w h)
+    , translate (x - w / 2 + 15) y (scale 0.1 0.1 (text label))
     ]
 
 renderGame :: GameState -> Assets -> Picture
 renderGame gs assets = case gameState gs of 
   Menu -> renderGameMenu gs
   _ -> pictures
-    [ addTranslate $ translateGameZone (renderMap gs)
-    , addTranslate $ translateGameZone (renderTowers (towers gs))
+    [ addTranslate (translateGameZone (renderMap gs))
+    , addTranslate (translateGameZone (renderGates (gates gs)))
+    , addTranslate (translateGameZone (renderTowers (towers gs)))
     , translateGameZone (renderEnemies (enemies gs) assets)
     , translateGameZone (renderProjectiles (projectiles gs))
     , renderUI gs
@@ -45,7 +46,7 @@ renderGame gs assets = case gameState gs of
     ]
 
 renderMap :: GameState -> Picture
-renderMap gs = pictures $ concatMap renderRow (zip [0..] (tiles gs))
+renderMap gs = pictures (concatMap renderRow (zip [0..] (tiles gs)))
   where
     renderRow (y, row) = map (renderTile y) (zip [0..] row)
     renderTile y (x, tile) = 
@@ -57,7 +58,7 @@ renderMap gs = pictures $ concatMap renderRow (zip [0..] (tiles gs))
           Neutral -> neutralColor
           Finish -> finishColor
           Start -> startColor
-      in translate (fst pos) (snd pos) $ colorRectangle color tileSize tileSize
+      in translate (fst pos) (snd pos) (colorRectangle color tileSize tileSize)
 
 renderTowers :: [Tower] -> Picture
 renderTowers = pictures . map renderTower
@@ -65,19 +66,25 @@ renderTowers = pictures . map renderTower
     renderTower tower = 
       let 
         color = towerColors (towerType tower)
-        radius = towerRange tower / sqrt 2  -- Visual representation of range
+        radius = towerRange tower  -- Visual representation of range
       in pictures
-        [ translate (fst pos) (snd pos) $ colorRectangle color 30 30
-        , translate (fst pos) (snd pos) $ colorCircle (withAlpha 0.2 color) radius
+        [ translate (fst pos) (snd pos) (colorRectangle color 30 30)
+        , translate (fst pos) (snd pos) (colorCircle (withAlpha 0.1 color) radius)
         ]
       where pos = towerPosition tower
+
+renderGates :: [Gates] -> Picture
+renderGates = pictures . map renderGate
+  where
+    renderGate gate = let pos = gatesPosition gate in
+      translate (fst pos) (snd pos) (colorRectangle magenta tileSize tileSize)
 
 renderEnemies :: [Enemy] -> Assets -> Picture
 renderEnemies ens assets = pictures (map renderEnemy ens)
   where
     renderEnemy enemy = pictures
-      [ translate x y $ color (enemyColor $ enemyType enemy) $ (scale 0.03 0.03 enemyBody)  -- Enemy body
-      , translate x (y - 20) $ healthBar (enemyHealth enemy) (enemyMaxHealth enemy)
+      [ translate x y (color (enemyColor (enemyType enemy)) (scale 0.03 0.03 enemyBody))  -- Enemy body
+      , translate x (y - 20) (healthBar (enemyHealth enemy) (enemyMaxHealth enemy))
       ]
       where
         (x, y) = enemyPosition enemy
@@ -92,42 +99,41 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
             width = 30
             ratio = current / max
           in pictures
-            [ color red $ rectangleWire width 5  -- Background
-            , color green $ rectangleSolid (width * ratio) 5  -- Health
+            [ color red (rectangleWire width 5)  -- Background
+            , color green (rectangleSolid (width * ratio) 5)  -- Health
             ]
 
 renderUI :: GameState -> Picture
-renderUI gs = pictures $ 
-  [ translate (-350) 250 $ scale 0.2 0.2 $ text ("Coins: " ++ show (coins gs)),
+renderUI gs = pictures 
+  ([ translate (-350) 250 (scale 0.2 0.2 (text ("Coins: " ++ show (coins gs)))),
     case buildMode gs of
-      Building _ -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on buildable tile to place tower"
-      Removing -> translate 0 (-280) $ scale 0.15 0.15 $ text "Click on tower that you want to remove"
+      Building _ -> translate 0 (-280) (scale 0.15 0.15 (text "Click on buildable tile to place tower"))
+      Removing -> translate 0 (-280) (scale 0.15 0.15 (text "Click on tower that you want to remove"))
+      GatesBuilding -> translate 0 (-280) (scale 0.15 0.15 (text "Click on road tile to place gates"))
       _ -> blank
-  ] ++ map renderButton gameButtons
+  ] ++ map renderButton gameButtons)
 
 renderGameOver :: Picture
 renderGameOver = pictures 
-  [ translate (-100) 0 $ scale 0.3 0.3 $ color red $ text "GAME OVER"
-  , translate (-200) (-100) $ scale 0.3 0.3 $ color red $ text "(press Space to restart)"
+  [ translate (-100) 0 (scale 0.3 0.3 (color red (text "GAME OVER")))
+  , translate (-200) (-100) (scale 0.3 0.3 (color red (text "(press Space to restart)")))
   ]
 
 renderGameMenu :: GameState -> Picture 
-renderGameMenu gs = pictures ((color yellow $ rectangleSolid 2000 2000) : (map renderButton menuButtons))
+renderGameMenu gs = pictures ((color white (rectangleSolid 2000 2000)) : (map renderButton menuButtons))
   
-
-
 colorRectangle :: Color -> Float -> Float -> Picture
-colorRectangle c w h = pictures [Color c $ rectangleSolid w h, Color black $ rectangleWire w h]
+colorRectangle c w h = pictures [Color c (rectangleSolid w h), Color black (rectangleWire w h)]
 
 colorCircle :: Color -> Float -> Picture
-colorCircle c r = Color c $ circleSolid r
+colorCircle c r = Color c (circleSolid r)
 
 loadPNG :: FilePath -> IO Picture
 loadPNG path = do
     mImg <- loadJuicyPNG path 
     case mImg of
         Just img -> return img
-        Nothing  -> error $ "Failed to load PNG: " ++ path
+        Nothing  -> error ("Failed to load PNG: " ++ path)
 
 loadAssets :: IO Assets
 loadAssets = do

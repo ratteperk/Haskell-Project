@@ -98,7 +98,7 @@ updateGame delta gs = case gameState gs of
     -- Update state
     updatedGS = gs
       { enemies = updatedEnemies'
-      , projectiles = filter hasNotReachedTarget $ map (\x -> moveProjectile delta x) remainingProjectiles
+      , projectiles = filter hasNotReachedTarget (map (\x -> moveProjectile delta x) remainingProjectiles)
       , coins = coins gs + coinsEarned
       , timeSinceLastWave = timeSinceLastWave gs + delta
       , randomGen = newGen
@@ -193,7 +193,7 @@ findTarget tower enemiesInRange =
 
 createProjectile :: Tower -> Enemy -> Projectile
 createProjectile tower enemy = Projectile
-  { projPosition = transferProjStart $ towerPosition tower
+  { projPosition = transferProjStart (towerPosition tower)
   , projType = towerType tower
   , projTarget = Just enemy
   , projDamage = towerDamage tower
