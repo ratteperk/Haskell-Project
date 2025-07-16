@@ -36,7 +36,7 @@ renderGame :: GameState -> Assets -> Picture
 renderGame gs assets = case gameState gs of 
   Menu -> renderGameMenu gs
   _ -> pictures
-    [ addTranslate (translateGameZone (renderMap gs))
+    [ addTranslate (translateGameZone (renderMap gs assets))
     , addTranslate (translateGameZone (renderGates (gates gs)))
     , addTranslate (translateGameZone (renderTowers (towers gs)))
     , translateGameZone (renderEnemies (enemies gs) assets)
@@ -45,20 +45,26 @@ renderGame gs assets = case gameState gs of
     , if (gameState gs) == GameOver then renderGameOver else blank
     ]
 
-renderMap :: GameState -> Picture
-renderMap gs = pictures (concatMap renderRow (zip [0..] (tiles gs)))
+renderMap :: GameState -> Assets -> Picture
+renderMap gs assets = pictures (concatMap renderRow (zip [0..] (tiles gs)))
   where
     renderRow (y, row) = map (renderTile y) (zip [0..] row)
-    renderTile y (x, tile) = 
-      let 
-        pos = (fromIntegral x * tileSize, fromIntegral y * tileSize)
-        color = case tile of
-          Road -> roadColor
-          Buildable -> buildableColor
-          Neutral -> neutralColor
-          Finish -> finishColor
-          Start -> startColor
-      in translate (fst pos) (snd pos) (colorRectangle color tileSize tileSize)
+    renderTile y (x, tile) = case tile of 
+      Road -> pictures (map (translate (fromIntegral x * tileSize) (fromIntegral y * tileSize)) 
+        [(scale 0.043 0.043 (roadBlockImg assets)), (rectangleWire tileSize tileSize)])
+
+      Buildable -> pictures (map (translate (fromIntegral x * tileSize) (fromIntegral y * tileSize)) 
+        [(scale 0.26 0.26 (buildableBlockImg assets)), (rectangleWire tileSize tileSize)])
+      _ ->
+        let 
+          pos = (fromIntegral x * tileSize, fromIntegral y * tileSize)
+          color = case tile of
+            Road -> roadColor
+            Buildable -> buildableColor
+            Neutral -> neutralColor
+            Finish -> finishColor
+            Start -> startColor
+        in translate (fst pos) (snd pos) (colorRectangle color tileSize tileSize)
 
 renderTowers :: [Tower] -> Picture
 renderTowers = pictures . map renderTower
@@ -143,4 +149,15 @@ loadAssets = do
     basicEnemy <- loadPNG "assets/basicEnemy.png"
     strongEnemy <- loadPNG "assets/strongEnemy.png"
     boss <- loadPNG "assets/boss.png"
-    return Assets {basicEnemyImg = basicEnemy, strongEnemyImg = strongEnemy, bossImg = boss}
+    roadBlock <- loadPNG "assets/dirt-block.png"
+    grassBlock <- loadPNG "assets/grass-block.png"
+    return Assets 
+      { basicEnemyImg = basicEnemy
+      , strongEnemyImg = strongEnemy
+      , bossImg = boss
+      , roadBlockImg = roadBlock
+      , buildableBlockImg = grassBlock
+      , spawnBlockImg = roadBlock
+      , finishBlockImg = roadBlock
+      , rockBlockImg = roadBlock
+      }

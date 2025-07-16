@@ -100,6 +100,11 @@ data Assets = Assets
     { basicEnemyImg :: Picture
     , strongEnemyImg :: Picture
     , bossImg :: Picture
+    , roadBlockImg :: Picture
+    , buildableBlockImg :: Picture
+    , spawnBlockImg :: Picture 
+    , finishBlockImg :: Picture
+    , rockBlockImg :: Picture
     }
 
 startBuilding :: TowerType -> GameState -> GameState
