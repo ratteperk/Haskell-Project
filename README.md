@@ -8,20 +8,10 @@
 
 ---
 
-## HyperLinks
-
-| 🔗 Link | Description |
-|----------|----------|
-| [License](./LICENSE) | License for project |
-| [Dependencies](./Haskell-Project.cabal) | .cabal file with dependencies |
-| [Assets](./assets/) | Images used in game |
-
----
-
 ## How to install and play
 
 - clone this repository
-- then run:
+- then run in the directory that contains project:
 ```
 cabal update
 cabal run
@@ -44,8 +34,10 @@ Each type of tower costs a particular price and has its own characteristics:
 - Cannon - normal damage, one target, large damage area, no additional effects for enemy, price: 50
 - Slow - small damage, one target, small damage area, freeze enemy (enemy walks slower), price: 75
 - Splash - high damage, multiple targets, normal damage area, no additional effects for enemy, price: 100
-- Gates - has HP, can block enemies while HP is greater than zero , price: 300
 
+## Gates
+- Gates - has HP, can block (damage) enemies while HP is greater than zero , price: 300
+  Gates can be placed on the road tiles
 ---
 
 ## Enemies
@@ -59,6 +51,6 @@ Each type of enemy arrives at particular waves and has its own characteristics
 ---
 
 ## Assets
-images for enemies are taken from the open source, its are famous smiles from the Geometry Dash
-
+images for enemies are taken from the open source, its are famous smiles from the Geometry Dash game
+images for tiles are taken from Minecraft game
 ---

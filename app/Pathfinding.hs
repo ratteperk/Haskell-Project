@@ -6,7 +6,7 @@ import Input (posToTile, getTile)
 import System.Random (randomR, mkStdGen, StdGen)
 
 
-tileToPos :: (Int, Int) -> Position 
+tileToPos :: TileCoord -> Position 
 tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * tileSize + tileSize/2)
 
 -- Precompute path for enemies based on the map and current random generator state 
@@ -33,12 +33,12 @@ findRoad :: [[TileType]] -> Position -> StdGen -> [Position]
 findRoad tiles start gen = helper start []
   where 
     helper prev path 
-      | let (a, b) = posToTile prev in getTile tiles a b == Just Finish = path ++ [prev]
+      | let pos = posToTile prev in getTile tiles pos == Just Finish = path ++ [prev]
       | otherwise = let current = findNear prev path in helper current (path ++ [prev])
 
     findNear prev path = let (x, y) = posToTile prev in
       case [tileToPos (y', x') | (x', y') <- [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)],
-               case getTile tiles x' y' of 
+               case getTile tiles (x', y') of 
                 Just Finish -> True 
                 Just Road -> True 
                 _ -> False] of
@@ -52,10 +52,10 @@ findRoad tiles start gen = helper start []
 
     isFinish [] = False
     isFinish (x : xs)
-      | let (x', y') = posToTile x in getTile tiles x' y' == Just Finish = True 
+      | let pos = posToTile x in getTile tiles pos == Just Finish = True 
       | otherwise = isFinish xs
 
     getFinish [] = error "Something wrong"
     getFinish (x : xs) 
-      | let (x', y') = posToTile x in getTile tiles x' y' == Just Finish = x 
+      | let pos = posToTile x in getTile tiles pos == Just Finish = x 
       | otherwise = getFinish xs

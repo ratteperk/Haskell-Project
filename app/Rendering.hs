@@ -3,16 +3,12 @@ module Rendering where
 import Graphics.Gloss
 import Types
 import Config
-import Types (startBuilding)
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
 import Graphics.Gloss.Juicy (loadJuicyPNG)
 
 translateGameZone :: Picture -> Picture 
 translateGameZone pic = translate (- xOffset) (- yOffset) pic
-
-addTranslate :: Picture -> Picture 
-addTranslate pic = translate (tileSize/2) (tileSize/2) pic
 
 renderProjectiles :: [Projectile] -> Picture
 renderProjectiles = pictures . map renderProjectile
@@ -36,9 +32,9 @@ renderGame :: GameState -> Assets -> Picture
 renderGame gs assets = case gameState gs of 
   Menu -> renderGameMenu gs
   _ -> pictures
-    [ addTranslate (translateGameZone (renderMap gs assets))
-    , addTranslate (translateGameZone (renderGates (gates gs)))
-    , addTranslate (translateGameZone (renderTowers (towers gs)))
+    [ translateGameZone (renderMap gs assets)
+    , translateGameZone (renderGates (gates gs))
+    , translateGameZone (renderTowers (towers gs))
     , translateGameZone (renderEnemies (enemies gs) assets)
     , translateGameZone (renderProjectiles (projectiles gs))
     , renderUI gs
@@ -48,7 +44,9 @@ renderGame gs assets = case gameState gs of
 renderMap :: GameState -> Assets -> Picture
 renderMap gs assets = pictures (concatMap renderRow (zip [0..] (tiles gs)))
   where
-    renderRow (y, row) = map (renderTile y) (zip [0..] row)
+    -- Tiles have to translated by half of its size since 
+    -- we need to shift their center for proper conversion from 2D grid map coordinates
+    renderRow (y, row) = map (translate (tileSize/2) (tileSize/2) . renderTile y) (zip [0..] row)
     renderTile y (x, tile) = case tile of 
       Road -> pictures (map (translate (fromIntegral x * tileSize) (fromIntegral y * tileSize)) 
         [(scale 0.043 0.043 (roadBlockImg assets)), (rectangleWire tileSize tileSize)])
@@ -59,8 +57,6 @@ renderMap gs assets = pictures (concatMap renderRow (zip [0..] (tiles gs)))
         let 
           pos = (fromIntegral x * tileSize, fromIntegral y * tileSize)
           color = case tile of
-            Road -> roadColor
-            Buildable -> buildableColor
             Neutral -> neutralColor
             Finish -> finishColor
             Start -> startColor
@@ -82,11 +78,17 @@ renderTowers = pictures . map renderTower
 renderGates :: [Gates] -> Picture
 renderGates = pictures . map renderGate
   where
-    renderGate gate = let pos = gatesPosition gate in
-      pictures [translate (fst pos) (snd pos) (colorRectangle magenta tileSize tileSize)
-        , translate (fst pos) (snd pos) (healthBar (gatesHealth gate) (gatesDefaultHealth))
-        ]
-
+    renderGate gate = 
+      let 
+        pos = gatesPosition gate
+        x = fst pos
+        y = snd pos
+      in
+        pictures 
+          [ translate x y (colorRectangle magenta tileSize tileSize)
+          , translate x y (healthBar (gatesHealth gate) (gatesDefaultHealth))
+          ]
+    
 renderEnemies :: [Enemy] -> Assets -> Picture
 renderEnemies ens assets = pictures (map renderEnemy ens)
   where

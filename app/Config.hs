@@ -1,24 +1,22 @@
 module Config where
-
+-- This file contains all necessary constants (excluding rendering related configuration)
+-- Most of the names are self-explanatory
 import System.Random (randomR, mkStdGen)
 import Graphics.Gloss.Data.Color
 import Types
 import Data.List (find)
 
--- Display configuration
+-- Display configuration section
 windowWidth, windowHeight :: Int
 windowWidth = 800
 windowHeight = 600
 
-tileSize :: Float
+tileSize :: Float -- in pixels
 tileSize = 40
 
-xOffset, yOffset :: Float
+xOffset, yOffset :: Float -- Shifting of entire game field
 yOffset = 200
 xOffset = 150
-
-transferProjStart :: Position -> Position
-transferProjStart (x, y) = (x + tileSize/2, y + tileSize/2)
 
 -- Enemy section
 
@@ -42,6 +40,8 @@ startPos = (0, 0)
 
 startPath :: [Position]
 startPath = []
+
+-- Enemy templates: 
 
 basicEnemy :: Enemy 
 basicEnemy =  Enemy
@@ -107,11 +107,15 @@ cannonTowerCost = 50
 slowTowerCost = 75
 splashTowerCost = 100
 
+getTowerCost :: TowerType -> Int
+getTowerCost CannonTower = cannonTowerCost
+getTowerCost SlowTower = slowTowerCost
+getTowerCost SplashTower = splashTowerCost
+
 cannonTowerDamage, slowTowerDamage, splashTowerDamage :: Float
 cannonTowerDamage = 15
 slowTowerDamage = 5
 splashTowerDamage = 25
-
 
 cannonTowerRange, slowTowerRange, splashTowerRange :: Float
 cannonTowerRange = 150
@@ -123,17 +127,17 @@ cannonTowerCooldown = 1
 slowTowerCooldown = 2
 splashTowerCooldown = 1.5
 
-
 -- Specific constants:
 
 slowTowerCoef :: Float
-slowTowerCoef = 0.75
+slowTowerCoef = 0.75 -- enemy speed multiplier that applied in case of hitting enemy by slow tower projectile
 
 splashTowerSplashRadius :: Float
-splashTowerSplashRadius = 50
+splashTowerSplashRadius = 50 -- in pixels
 
 
 -- Colors
+
 roadColor :: Color
 roadColor = makeColor 0.5 0.35 0.05 10  -- Brown
 
@@ -161,7 +165,7 @@ enemyColor Boss = orange
 
 -- Waves section
 
-waveConfigs :: [(WaveType, [Enemy], Float)]
+waveConfigs :: [(WaveType, [Enemy], Time)] -- Time field is the time between spawning these enemies within the wave 
 waveConfigs = 
   [ (BasicWave, bwEnemies, 0.8)
   , (FirstWave, fwEnemies, 0.5)
@@ -169,23 +173,29 @@ waveConfigs =
   , (ThirdWave, twEnemies, 1)
   , (LastWave, lwEnemies, 1.5)]
 
-getWaveConfig :: WaveType -> (WaveType, [Enemy], Float)
+getWaveConfig :: WaveType -> (WaveType, [Enemy], Time) -- Returns corresponding wave config
 getWaveConfig wt = 
   case find (\(t,_,_) -> t == wt) waveConfigs of
     Just cfg -> cfg
     Nothing -> (BasicWave, bwEnemies, 1)
 
--- Game section
+getNextWaveType :: WaveType -> WaveType -- Specifies order of the waves
+getNextWaveType BasicWave = FirstWave
+getNextWaveType FirstWave = SecondWave
+getNextWaveType SecondWave = ThirdWave
+getNextWaveType ThirdWave = LastWave 
+getNextWaveType LastWave = BasicWave
 
-initGen :: Int 
-initGen = 2 -- Constant to initialize generator field in initialState (although in Main 
-            -- generator initial value is generated in runtime)
+waveSeparateTime :: Time -- time between waves
+waveSeparateTime = 5
+
+-- Gates section
 
 gatesCost :: Int
 gatesCost = 300
 
 gatesDefaultDamage :: Float
-gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- per tic
+gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- damage per frame
 
 gatesDefaultHealth :: Float
 gatesDefaultHealth = 700
@@ -193,8 +203,13 @@ gatesDefaultHealth = 700
 gatesHitRadius :: Float
 gatesHitRadius = 30
 
+-- Game settings section
+
 initialCoins :: Int
 initialCoins = 200
+
+initGen :: Int
+initGen = 2
 
 fps :: Int
 fps = 60
@@ -249,6 +264,21 @@ sampleMap3 =
   [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
   [n, n, n, n, f, n, n, n, n, n, n, n, n, n, n]]
 
+-- Buttons effects (setters):
+
+startBuilding :: TowerType -> GameState -> GameState
+startBuilding towerType gs = gs { buildMode = Building towerType}
+
+enableRemoving :: GameState -> GameState
+enableRemoving gs = gs { buildMode = Removing}
+
+gatesBuilding :: GameState -> GameState
+gatesBuilding gs = gs {buildMode = GatesBuilding}
+
+startMap :: [[TileType]] -> GameState -> GameState 
+startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }
+
+
 initialState :: [[TileType]] -> GameState
 initialState mapTiles = GameState
   { towers = []
@@ -291,12 +321,12 @@ menuButtons = [ Button
 
 gameButtons :: [UIElement]
 gameButtons = [ Button 
-                { btnPosition = (-300, -250)
-                , btnSize = (100, 50)
-                , btnAction = startBuilding CannonTower
-                , btnLabel = "Cannon (" ++ show cannonTowerCost ++ ")"
-                , btnColor = blue
-                }
+                  { btnPosition = (-300, -250)
+                  , btnSize = (100, 50)
+                  , btnAction = startBuilding CannonTower
+                  , btnLabel = "Cannon (" ++ show cannonTowerCost ++ ")"
+                  , btnColor = blue
+                  }
               , Button 
                   { btnPosition = (-150, -250)
                   , btnSize = (100, 50)
@@ -312,16 +342,16 @@ gameButtons = [ Button
                   , btnColor = violet
                   }
               , Button 
-                {  btnPosition = (300, -250)
-                  , btnSize = (130, 50)
-                  , btnAction = enableRemoving
-                  , btnLabel = "Remove building"
-                  , btnColor = red
-                }
-              , Button 
-              { btnPosition = (150, -250)
-                , btnSize = (100, 50)
-                , btnAction = gatesBuilding
-                , btnLabel = "Gates (" ++ show gatesCost ++ ")"
-                , btnColor = magenta
-              }]
+                  {  btnPosition = (300, -250)
+                    , btnSize = (130, 50)
+                    , btnAction = enableRemoving
+                    , btnLabel = "Remove building"
+                    , btnColor = red
+                  }
+              , Button
+                  { btnPosition = (150, -250)
+                    , btnSize = (100, 50)
+                    , btnAction = gatesBuilding
+                    , btnLabel = "Gates (" ++ show gatesCost ++ ")"
+                    , btnColor = magenta
+                  }]

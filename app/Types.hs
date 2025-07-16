@@ -12,8 +12,8 @@ type Radius = Float
 type Coins = Int
 type Time = Float
 
-type Position = (Float, Float)
-type TileCoord = (Int, Int)
+type Position = (Float, Float) -- in pixels
+type TileCoord = (Int, Int) -- Coordinates on 2D grid map
 
 data TileType = Road | Buildable | Neutral | Finish | Start
   deriving (Eq, Show)
@@ -38,7 +38,7 @@ data Projectile = Projectile
 data Gates = Gates 
   { gatesHealth :: Health
   , gatesPosition :: Position
-  -- damage is fixed, so there is no need to store it in every instance
+  -- damage is fixed for all gates, so there is no need to store it in every instance
   }
 
 data Tower = Tower
@@ -77,7 +77,7 @@ data GameState = GameState
   , randomGen :: StdGen
   , currentWave :: WaveType
   , waveEnemies :: [Enemy]
-  , spawnTimer :: Float
+  , spawnTimer :: Time
   }
 
 data UIElement = Button
@@ -106,15 +106,3 @@ data Assets = Assets
     , finishBlockImg :: Picture
     , rockBlockImg :: Picture
     }
-
-startBuilding :: TowerType -> GameState -> GameState
-startBuilding towerType gs = gs { buildMode = Building towerType }
-
-enableRemoving :: GameState -> GameState
-enableRemoving gs = gs { buildMode = Removing}
-
-gatesBuilding :: GameState -> GameState
-gatesBuilding gs = gs {buildMode = GatesBuilding}
-
-startMap :: [[TileType]] -> GameState -> GameState 
-startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }
