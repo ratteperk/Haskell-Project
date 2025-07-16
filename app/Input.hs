@@ -148,7 +148,7 @@ tryBuildGates pos gs =
       | gatesPosition gates == pos = True
       | otherwise = isOccupied rest
 
-  in case isOccupied (gates gs) && coins gs >= gatesCost of
+  in case not (isOccupied (gates gs) && coins gs >= gatesCost) of
     True -> gs
         { coins = coins gs - gatesCost
         , gates = newGates : gates gs

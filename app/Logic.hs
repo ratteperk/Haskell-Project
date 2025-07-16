@@ -75,7 +75,7 @@ spawnEnemies dt gs
   -- Waiting for the next enemy in wave
   | otherwise = gs {spawnTimer = spawnTimer gs - dt}
 
-
+-- Spawns the next enemy in wave
 spawnNextEnemy :: GameState -> GameState
 spawnNextEnemy gs = case waveEnemies gs of 
   [] -> gs 
@@ -86,7 +86,8 @@ spawnNextEnemy gs = case waveEnemies gs of
     , spawnTimer = spawnInt
     }
 
-prepareNextWave :: GameState -> GameState -- Just sets the next wave to the GameState
+-- Just sets the next wave to the GameState
+prepareNextWave :: GameState -> GameState
 prepareNextWave gs = 
   let 
     nextWaveType = getNextWaveType (currentWave gs)
@@ -102,43 +103,44 @@ prepareNextWave gs =
 updateGame :: Float -> GameState -> GameState
 updateGame delta gs = case gameState gs of 
   Menu -> gs -- just waiting while user click some button
-  GameProcess -> foldl (\acc f -> f acc) updatedGS updates
   GameOver -> gs
+  GameProcess -> foldl' (\state f -> f state) updatedGS updates
+    where
+      -- Update projectiles and enemies with collision
+      (remainingProjectiles, shootedEnemies) = updateProjectiles (projectiles gs) (enemies gs)
+      (gates', updatedEnemies) = applyGatesDamage (gates gs) (shootedEnemies)
+      
+      -- Add coins for killed enemies
+      coinsEarned = sum [enemyValue e | e <- updatedEnemies, enemyHealth e <= 0]
+      
+      -- Creating a new generator:
+      (_, newGen) = randomR (1 :: Int, 100 :: Int) (randomGen gs)
 
-  where
-    -- Update projectiles and enemies with collision
-    (remainingProjectiles, shootedEnemies) = updateProjectiles (projectiles gs) (enemies gs)
-    (gates', updatedEnemies) = applyGatesDamage (gates gs) (shootedEnemies)
-    
-    -- Add coins for killed enemies
-    coinsEarned = sum [enemyValue e | e <- updatedEnemies, enemyHealth e <= 0]
-    
-    -- Creating a new generator:
-    (_, newGen) = randomR (1 :: Int, 100 :: Int) (randomGen gs)
+      -- Moving (and filtering) alive enemies
+      updatedEnemies' = moveEnemies delta (gates gs) (filter (\e -> enemyHealth e > 0) updatedEnemies)
 
-    -- Moving (and filtering) alive enemies
-    updatedEnemies' = moveEnemies delta (gates gs) (filter (\e -> enemyHealth e > 0) updatedEnemies)
+      -- Update state
+      updatedGS = gs
+        { enemies = updatedEnemies'
+        , projectiles = filter hasNotReachedTarget (map (\x -> moveProjectile delta x) remainingProjectiles)
+        , coins = coins gs + coinsEarned
+        , gates = gates'
+        , timeSinceLastWave = timeSinceLastWave gs + delta
+        , randomGen = newGen
+        }
 
-    -- Update state
-    updatedGS = gs
-      { enemies = updatedEnemies'
-      , projectiles = filter hasNotReachedTarget (map (\x -> moveProjectile delta x) remainingProjectiles)
-      , coins = coins gs + coinsEarned
-      , gates = gates'
-      , timeSinceLastWave = timeSinceLastWave gs + delta
-      , randomGen = newGen
-      }
+      -- Independent checks
+      updates = 
+        [ spawnEnemies delta
+        , \s -> towersAttack delta s
+        , checkGameOver
+        ]
+      
+      hasNotReachedTarget proj = case projTarget proj of
+        Nothing -> False
+        Just enemy -> enemyPosition enemy /= projPosition proj
 
-    updates = 
-      [ spawnEnemies delta
-      , \s -> towersAttack delta s
-      , checkGameOver
-      ]
-    
-    hasNotReachedTarget proj = case projTarget proj of
-      Nothing -> False
-      Just enemy -> enemyPosition enemy /= projPosition proj
-
+-- Moves all projectiles in the direction vector:
 moveProjectile :: Float -> Projectile -> Projectile
 moveProjectile delta proj = case projTarget proj of
   Nothing -> proj  -- No target (shouldn't happen, just to complete the function)
@@ -197,7 +199,7 @@ reachedNextPoint e delta =
   in distSq <= (enemySpeed e * delta) ^ 2
 
 towersAttack :: Float -> GameState -> GameState
-towersAttack delta gs = foldl (attackWithTower delta) gs (towers gs)
+towersAttack delta gs = foldl' (attackWithTower delta) gs (towers gs)
   where
     attackWithTower delta acc tower
       | towerTimeSinceLastShot tower >= towerCooldown tower =
@@ -238,6 +240,4 @@ checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameState = GameO
       let 
         p1 = enemyPosition e
         p2 = last (enemyPath e)
-        dx = tx - x
-        dy = ty - y
       in distance p1 p2 < 5  -- Close enough to finish

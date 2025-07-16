@@ -20,17 +20,17 @@ xOffset = 150
 
 -- Enemy section
 
-basicEnemyHealth, strongEnemyHealth, bossHealth :: Float 
+basicEnemyHealth, strongEnemyHealth, bossHealth :: Health 
 basicEnemyHealth = 100
 strongEnemyHealth = 200
 bossHealth = 1700
 
-basicEnemySpeed, strongEnemySpeed, bossSpeed :: Float
+basicEnemySpeed, strongEnemySpeed, bossSpeed :: Speed
 basicEnemySpeed = 50
 strongEnemySpeed = 30
 bossSpeed = 20
 
-basicEnemyValue, strongEnemyValue,bossValue :: Int 
+basicEnemyValue, strongEnemyValue, bossValue :: Int
 basicEnemyValue = 20
 strongEnemyValue = 40
 bossValue = 200
@@ -112,17 +112,22 @@ getTowerCost CannonTower = cannonTowerCost
 getTowerCost SlowTower = slowTowerCost
 getTowerCost SplashTower = splashTowerCost
 
-cannonTowerDamage, slowTowerDamage, splashTowerDamage :: Float
+cannonTowerDamage, slowTowerDamage, splashTowerDamage :: Damage
 cannonTowerDamage = 15
 slowTowerDamage = 5
 splashTowerDamage = 25
 
-cannonTowerRange, slowTowerRange, splashTowerRange :: Float
+-- getTowerDamage :: TowerType -> Damage
+-- getTowerDamage type = case type of
+--   CannonTower -> cannonTowerDamage
+--   SlowTower -> slowTowerDamage
+
+cannonTowerRange, slowTowerRange, splashTowerRange :: Radius
 cannonTowerRange = 150
 slowTowerRange = 120
 splashTowerRange = 135
 
-cannonTowerCooldown, slowTowerCooldown, splashTowerCooldown :: Float
+cannonTowerCooldown, slowTowerCooldown, splashTowerCooldown :: Time
 cannonTowerCooldown = 1
 slowTowerCooldown = 2
 splashTowerCooldown = 1.5
@@ -132,7 +137,7 @@ splashTowerCooldown = 1.5
 slowTowerCoef :: Float
 slowTowerCoef = 0.75 -- enemy speed multiplier that applied in case of hitting enemy by slow tower projectile
 
-splashTowerSplashRadius :: Float
+splashTowerSplashRadius :: Radius
 splashTowerSplashRadius = 50 -- in pixels
 
 
@@ -192,9 +197,9 @@ waveSeparateTime = 5
 -- Gates section
 
 gatesCost :: Int
-gatesCost = 300
+gatesCost = 30
 
-gatesDefaultDamage :: Float
+gatesDefaultDamage :: Damage
 gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- damage per frame
 
 gatesDefaultHealth :: Float
@@ -276,7 +281,7 @@ gatesBuilding :: GameState -> GameState
 gatesBuilding gs = gs {buildMode = GatesBuilding}
 
 startMap :: [[TileType]] -> GameState -> GameState 
-startMap tilemap gs = gs { tiles = tilemap, gameState = GameProcess }
+startMap tilemap gs = gs {tiles = tilemap, gameState = GameProcess}
 
 
 initialState :: [[TileType]] -> GameState
