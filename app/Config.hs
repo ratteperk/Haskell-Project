@@ -223,7 +223,7 @@ b = Buildable
 f = Finish
 s = Start
 
-sampleMap1, sampleMap2, sampleMap3 :: [[TileType]]
+sampleMap1, sampleMap2, sampleMap3, sampleMap4 :: [[TileType]]
    
 sampleMap1 = 
   [[n, s, b, b, b, b, b],
@@ -265,6 +265,23 @@ sampleMap3 =
   [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
   [n, n, b, b, r, n, n, n, n, n, n, n, n, n, n],
   [n, n, n, n, f, n, n, n, n, n, n, n, n, n, n]]
+
+sampleMap4 = 
+  [[n, n, n, s, n, n, n, n, n, n, n, n, n, n, n],
+   [n, n, n, r, n, n, n, n, n, n, n, n, n, n, n],
+   [n, n, n, r, n, n, n, n, n, n, n, n, n, n, n],
+   [s, r, r, r, r, r, r, r, r, n, n, n, n, n, n],
+   [n, n, n, r, n, n, n, n, r, n, n, n, n, n, n],
+   [n, n, n, r, n, n, n, n, r, n, n, n, n, n, n],
+   [n, n, n, r, n, n, n, b, r, n, n, n, n, n, n],
+   [n, n, n, r, n, n, b, b, r, n, n, n, n, n, n],
+   [n, n, n, r, r, r, r, r, r, r, r, r, n, n, n],
+   [n, n, n, n, n, n, n, n, r, b, b, r, n, n, n],
+   [n, n, n, n, n, n, n, n, r, b, b, r, n, n, n],
+   [n, n, n, n, n, n, n, n, r, r, r, r, r, r, f],
+   [n, n, n, n, n, n, n, n, n, n, n, r, n, n, n],
+   [n, n, n, n, n, n, n, n, n, n, n, r, n, n, n],
+   [n, n, n, n, n, n, n, n, n, n, n, f, n, n, n]]
 
 -- Buttons effects (setters):
 
@@ -316,7 +333,7 @@ menuButtons = [ Button
               , Button 
                   { btnPosition = (200, 0)
                   , btnSize = (150, 100)
-                  , btnAction = startMap sampleMap3
+                  , btnAction = startMap sampleMap4
                   , btnLabel = "Hard map"
                   , btnColor = blue
                   }]

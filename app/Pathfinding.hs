@@ -12,7 +12,7 @@ tileToPos (y, x) = (fromIntegral x * tileSize + tileSize/2, fromIntegral y * til
 
 -- Precompute path for enemies based on the map and current random generator state 
 getEnemyPath :: [[TileType]] -> StdGen -> [Position]
-getEnemyPath tiles gen = findRoad' gen tiles (findStart tiles gen) []
+getEnemyPath tiles gen = findRoad gen tiles (findStart tiles gen) []
 
 findStart :: [[TileType]] -> StdGen -> Position
 findStart tiles gen = 
@@ -22,8 +22,8 @@ findStart tiles gen =
     [] -> error "No start tile found" 
     arr -> tileToPos (arr !! fst (generateRandom 0 (length arr - 1) gen))
     
-findRoad' :: StdGen -> [[TileType]] -> Position -> [Position] -> [Position]
-findRoad' gen tiles current path = findNear current path
+findRoad :: StdGen -> [[TileType]] -> Position -> [Position] -> [Position]
+findRoad gen tiles current path = findNear current path
   where 
     findNear prev path = let (x, y) = posToTile prev in
       case [tileToPos (y', x') | (x', y') <- [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)],
@@ -33,12 +33,12 @@ findRoad' gen tiles current path = findNear current path
                 _ -> False] of
         [] -> error "No road tile found"
         arr -> let arr' = filter (`notElem` path) arr
-          in chooseCorrect (if length arr' > 1 then (filter (goToFinish) arr') else arr') path
+          in chooseCorrect (if length arr' > 1 then (filter (goToFinish) arr') else arr')
 
-    goToFinish next = isLeadToFinish next path
+    goToFinish next = isLeadToFinish next (path ++ [current])
 
-    isLeadToFinish pos path =
-      let visited = path ++ [pos]
+    isLeadToFinish pos path' =
+      let visited = path' ++ [pos]
           (x, y) = posToTile pos
           neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
           validMoves = [tileToPos (y', x') | (x', y') <- neighbors,
@@ -61,15 +61,17 @@ findRoad' gen tiles current path = findNear current path
                                             Just Finish -> True 
                                             _ -> False]
             newVisited = visited ++ [current']
-        in any (\p -> p `notElem` newVisited && canReachFinish newVisited p) next
+            next' = filter (`notElem` newVisited) next
+        in case next' of 
+          [] -> False
+          el -> any (canReachFinish newVisited) el
 
-
-    chooseCorrect [] path = error ("No correct road tile" ++ show (map posToTile path) ++ show (posToTile current))
-    chooseCorrect nearRoad path
-      | isFinish nearRoad = path ++ [getFinish nearRoad]
+    chooseCorrect [] = error ("No correct road tile" ++ show (map posToTile path) ++ show (posToTile current))
+    chooseCorrect nearRoad
+      | isFinish nearRoad = path ++ [current, getFinish nearRoad]
       | otherwise = 
         let (rInt, newGen) = generateRandom 0 (length nearRoad - 1) gen
-        in findRoad' newGen tiles (nearRoad !! rInt) (path ++ [current])
+        in findRoad newGen tiles (nearRoad !! rInt) (path ++ [current])
 
     isFinish [] = False
     isFinish (x : xs)
