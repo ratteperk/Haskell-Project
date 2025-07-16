@@ -4,7 +4,7 @@ import Graphics.Gloss (Picture)
 import Graphics.Gloss.Data.Color
 import System.Random (randomR, mkStdGen, StdGen)
 
-
+-- Synonyms
 type Health = Float
 type Damage = Float
 type Speed = Float
@@ -12,7 +12,7 @@ type Radius = Float
 type Coins = Int
 type Time = Float
 
-type Position = (Float, Float) -- in pixels
+type Position = (Float, Float) -- Coordinates in pixels
 type TileCoord = (Int, Int) -- Coordinates on 2D grid map
 
 data TileType = Road | Buildable | Neutral | Finish | Start
@@ -30,7 +30,7 @@ data States = Menu | GameProcess | GameOver
 data Projectile = Projectile
   { projPosition :: Position
   , projType :: TowerType
-  , projTarget :: Maybe Enemy
+  , projTarget :: Position
   , projDamage :: Damage
   , projSpeed :: Speed
   }
@@ -53,12 +53,12 @@ data Tower = Tower
 data Enemy = Enemy
   { enemyPosition :: Position
   , enemyType :: EnemyType
-  , enemyHealth :: Float 
-  , enemyMaxHealth :: Float 
-  , enemySpeed :: Float
-  , enemyPath :: [Position]
-  , enemyCurrentTarget :: Int
-  , enemyValue :: Int
+  , enemyHealth :: Health
+  , enemyMaxHealth :: Health
+  , enemySpeed :: Speed -- Pixels per second
+  , enemyPath :: [Position] -- List of points that enemy traverses (centers of road tiles)
+  , enemyCurrentTarget :: Int -- Index of the point that enemy is walking to
+  , enemyValue :: Coins -- Amount of coins that that enemy leaves after dying
   } deriving (Eq)
 
 data BuildMode = NotBuilding | Building TowerType | Removing | GatesBuilding

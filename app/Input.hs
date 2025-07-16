@@ -148,7 +148,7 @@ tryBuildGates pos gs =
       | gatesPosition gates == pos = True
       | otherwise = isOccupied rest
 
-  in case not (isOccupied (gates gs) && coins gs >= gatesCost) of
+  in case not (isOccupied (gates gs)) && coins gs >= gatesCost of
     True -> gs
         { coins = coins gs - gatesCost
         , gates = newGates : gates gs
@@ -195,4 +195,5 @@ isPointInButton (px, py) button =
     right = bx + w/2
     bottom = by - h/2
     top = by + h/2
-  in px >= left && px <= right && py >= bottom && py <= top
+  in
+    px >= left && px <= right && py >= bottom && py <= top

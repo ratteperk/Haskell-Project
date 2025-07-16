@@ -51,6 +51,7 @@ Each type of enemy arrives at particular waves and has its own characteristics
 ---
 
 ## Assets
-images for enemies are taken from the open source, its are famous smiles from the Geometry Dash game
-images for tiles are taken from Minecraft game
+Images for enemies are taken from the open source, its are famous smiles from the Geometry Dash game.
+
+Images for tiles are taken from Minecraft game.
 ---

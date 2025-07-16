@@ -9,7 +9,7 @@ import Logic
 import Config
 import System.Random (randomR, mkStdGen, newStdGen)
 
-
+-- Program entry point
 main :: IO ()
 main = do
   rndGen <- newStdGen
@@ -20,7 +20,7 @@ main = do
     (InWindow 
       "Tower Defense" 
       (windowWidth, windowHeight) 
-      (100, 100))
+      (200, 50)) -- Initial location of the window with respect to left upper corner
     white
     fps
     initialGameState

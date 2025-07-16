@@ -117,10 +117,6 @@ cannonTowerDamage = 15
 slowTowerDamage = 5
 splashTowerDamage = 25
 
--- getTowerDamage :: TowerType -> Damage
--- getTowerDamage type = case type of
---   CannonTower -> cannonTowerDamage
---   SlowTower -> slowTowerDamage
 
 cannonTowerRange, slowTowerRange, splashTowerRange :: Radius
 cannonTowerRange = 150
@@ -197,15 +193,15 @@ waveSeparateTime = 5
 -- Gates section
 
 gatesCost :: Int
-gatesCost = 30
+gatesCost = 300
 
 gatesDefaultDamage :: Damage
 gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- damage per frame
 
-gatesDefaultHealth :: Float
+gatesDefaultHealth :: Health
 gatesDefaultHealth = 700
 
-gatesHitRadius :: Float
+gatesHitRadius :: Radius
 gatesHitRadius = 30
 
 -- Game settings section
@@ -213,6 +209,7 @@ gatesHitRadius = 30
 initialCoins :: Int
 initialCoins = 200
 
+-- Just to inititalize initialState generator field (anyway, in the Main generator is created in runtime) 
 initGen :: Int
 initGen = 2
 

@@ -4,9 +4,10 @@ import Types
 import Config
 import Pathfinding
 import Data.List (find, foldl')
+import Data.Maybe (listToMaybe)
 import System.Random (randomR)
 
--- Just euclidian distance
+-- Just euclidian distance in pixels
 distance :: Position -> Position -> Float
 distance (x1, y1) (x2, y2) = sqrt ((x2-x1)^2 + (y2-y1)^2)
 
@@ -136,103 +137,111 @@ updateGame delta gs = case gameState gs of
         , checkGameOver
         ]
       
-      hasNotReachedTarget proj = case projTarget proj of
-        Nothing -> False
-        Just enemy -> enemyPosition enemy /= projPosition proj
+      hasNotReachedTarget proj = projTarget proj /= projPosition proj
 
--- Moves all projectiles in the direction vector:
+-- Moves projectile in the direction of the target:
 moveProjectile :: Float -> Projectile -> Projectile
-moveProjectile delta proj = case projTarget proj of
-  Nothing -> proj  -- No target (shouldn't happen, just to complete the function)
-  Just enemy ->
-    let 
-      (px, py) = projPosition proj
-      (ex, ey) = enemyPosition enemy
-      dx = ex - px
-      dy = ey - py
-      dist = sqrt (dx*dx + dy*dy)
-      moveDist = projSpeed proj * delta
-    in 
-      if dist <= moveDist
-      then proj { projPosition = (ex, ey) }
-      else proj { projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist) }
+moveProjectile delta proj =
+  let 
+    (px, py) = projPosition proj
+    (ex, ey) = projTarget proj
+    dx = ex - px
+    dy = ey - py
+    dist = distance (px, py) (ex, ey)
+    moveDist = projSpeed proj * delta -- distance that projectile passes during one frame
+  in 
+    if dist <= moveDist
+    then proj {projPosition = (ex, ey)}
+    else proj {projPosition = (px + dx/dist*moveDist, py + dy/dist*moveDist)}
 
+-- Moving of enemies (considering gates stopping effect)
 moveEnemies :: Float -> [Gates] -> [Enemy] -> [Enemy]
 moveEnemies delta gates = map updateEnemy
   where
     updateEnemy e = e
       { enemyPosition = newPos e
-      , enemyCurrentTarget = if reachedNextPoint e delta then enemyCurrentTarget e + 1 else enemyCurrentTarget e
+      , enemyCurrentTarget = if reachedNextPoint e then enemyCurrentTarget e + 1 else enemyCurrentTarget e
       }
 
-    newPos e =
+    newPos e = -- if an enemy is very close to some gates then it stops moving
       case find (\x -> distance (gatesPosition x) (enemyPosition e) <= gatesHitRadius) gates of
         Nothing -> moveAlongPath e delta
         Just _ -> enemyPosition e
 
+-- Moves enemy to the next point of its path
 moveAlongPath :: Enemy -> Float -> Position
 moveAlongPath e delta = 
   let 
     (x, y) = enemyPosition e
-    path = enemyPath e
-    currentIdx = enemyCurrentTarget e
-    nextPos = path !! min (currentIdx + 1) (length path - 1)
-    (tx, ty) = nextPos
-    dx = tx - x
-    dy = ty - y
-    dist = sqrt (dx*dx + dy*dy)
-    speed = enemySpeed e * delta
-    ratio = if dist > 0 then speed / dist else 0
-  in (x + dx * ratio, y + dy * ratio)
+    (nextX, nextY) = enemyPath e !! min (enemyCurrentTarget e + 1) (length (enemyPath e) - 1) -- next point
+    r = enemySpeed e * delta / distance (nextX, nextY) (x, y) -- ratio of distance to walk during this frame and
+    -- remaining distance 
+  in
+    (x + (nextX - x) * r, y + (nextY- y) * r)
 
-reachedNextPoint :: Enemy -> Float -> Bool
-reachedNextPoint e delta =
-  let 
-    (x, y) = enemyPosition e
-    path = enemyPath e
-    currentIdx = enemyCurrentTarget e
-    nextPos = path !! min (currentIdx + 1) (length path - 1)
-    (tx, ty) = nextPos
-    dx = tx - x
-    dy = ty - y
-    distSq = dx*dx + dy*dy
-  in distSq <= (enemySpeed e * delta) ^ 2
+-- Returns the distance to the next point on the path
+getDistanceToNextPoint :: Enemy -> Float
+getDistanceToNextPoint e = distance p1 p2
+  where
+    p1 = enemyPosition e
+    p2 = enemyPath e !! min (enemyCurrentTarget e + 1) (length (enemyPath e) - 1)
 
+-- Checks whether an enemy reached the next point of its path or not 
+reachedNextPoint :: Enemy -> Bool
+reachedNextPoint e = getDistanceToNextPoint e <= 2 -- 2-pixels precision is needed due to floating-point issues
+
+-- Performs attack of towers
 towersAttack :: Float -> GameState -> GameState
 towersAttack delta gs = foldl' (attackWithTower delta) gs (towers gs)
   where
-    attackWithTower delta acc tower
+    attackWithTower delta game tower
       | towerTimeSinceLastShot tower >= towerCooldown tower =
-        case findTarget tower (enemies acc) of
-          Just enemy -> 
+        case findTarget tower (enemies game) of
+          Just enemyPos ->
             let 
-              newProj = createProjectile tower enemy
-              newTower = tower { towerTimeSinceLastShot = 0 }
-            in acc
-              { projectiles = newProj : projectiles acc
-              , towers = newTower : filter (/= tower) (towers acc)
+              newProj = createProjectile tower enemyPos
+              newTower = tower {towerTimeSinceLastShot = 0}
+            in game
+              { projectiles = newProj : projectiles game
+              , towers = newTower : filter (/= tower) (towers game)
               }
-          Nothing -> acc
+          Nothing -> game
       | otherwise = 
-        acc { towers = tower { towerTimeSinceLastShot = towerTimeSinceLastShot tower + delta } 
-          : filter (/= tower) (towers acc) }
+        game {towers = tower {towerTimeSinceLastShot = towerTimeSinceLastShot tower + delta} 
+          : filter (/= tower) (towers game)}
 
-findTarget :: Tower -> [Enemy] -> Maybe Enemy
-findTarget tower enemiesInRange = 
-  let inRange = filter (\e -> distance (towerPosition tower) (enemyPosition e) <= towerRange tower) enemiesInRange
-  in case inRange of
-    [] -> Nothing
-    es -> Just (head es)  -- Simple targeting - first enemy in range
+-- Find the closest to finish enemy in the scope
+findTarget :: Tower -> [Enemy] -> Maybe Position
+findTarget tower enemiesInRange = findNearestToFinish inRange []
+  where
+    -- filtered enemies
+    inRange = filter (\e -> distance (towerPosition tower) (enemyPosition e) <= towerRange tower) enemiesInRange
 
-createProjectile :: Tower -> Enemy -> Projectile
-createProjectile tower enemy = Projectile
+    findNearestToFinish [] accum = case listToMaybe accum of
+      Nothing -> Nothing
+      Just e -> Just (enemyPosition e)
+    findNearestToFinish (e:es) accum = case listToMaybe accum of
+      Nothing -> findNearestToFinish es [e]
+      Just en -> if (isFirstCloserToFinish e en) then findNearestToFinish es [e] else findNearestToFinish es [en]
+    
+    -- returns amount of remaining tiles (that enemy should traverse to reach the finish)
+    remainingTiles e = length (enemyPath e) - enemyCurrentTarget e
+
+    isFirstCloserToFinish e1 e2 = case remainingTiles e1 == remainingTiles e2 of
+      True -> getDistanceToNextPoint e1 < getDistanceToNextPoint e2
+      False -> remainingTiles e1 < remainingTiles e2
+
+-- Just creates projectile
+createProjectile :: Tower -> Position -> Projectile
+createProjectile tower pos = Projectile
   { projPosition = towerPosition tower
   , projType = towerType tower
-  , projTarget = Just enemy
+  , projTarget = pos
   , projDamage = towerDamage tower
   , projSpeed = projectileSpeed -- Pixels per frame
   }
 
+-- Checks whether any enemy is close enough to finish
 checkGameOver :: GameState -> GameState
 checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameState = GameOver } else gs
   where
@@ -240,4 +249,4 @@ checkGameOver gs = if any reachedFinish (enemies gs) then gs { gameState = GameO
       let 
         p1 = enemyPosition e
         p2 = last (enemyPath e)
-      in distance p1 p2 < 5  -- Close enough to finish
+      in distance p1 p2 < 5 
