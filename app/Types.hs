@@ -37,8 +37,8 @@ data Projectile = Projectile
 
 data Gates = Gates 
   { gatesHealth :: Health
-  , gatesDamage :: Damage -- per frame
   , gatesPosition :: Position
+  -- damage is fixed, so there is no need to store it in every instance
   }
 
 data Tower = Tower

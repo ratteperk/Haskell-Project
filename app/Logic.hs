@@ -7,15 +7,29 @@ import Graphics.Gloss.Data.Vector (mulSV)
 import Data.List (find, foldl')
 import System.Random (randomR)
 
-
+-- Just euclidian distance
 distance :: Position -> Position -> Float
 distance (x1, y1) (x2, y2) = sqrt ((x2-x1)^2 + (y2-y1)^2)
 
+applyGatesDamage :: [Gates] -> [Enemy] -> ([Gates], [Enemy])
+applyGatesDamage [] enemies = ([], enemies)
+applyGatesDamage gates enemies = foldl' processGate ([], enemies) gates
+  where
+    processGate (remainingGates, currentEnemies) gate = 
+      let (gate', enemies') = tics gate currentEnemies []
+      in if gatesHealth gate' <= 0 then (remainingGates, enemies') else (gate':remainingGates, enemies')
+
+    tics g [] accum = (g, accum)
+    tics g (e:es) accum =
+      if distance (enemyPosition e) (gatesPosition g) <= gatesHitRadius
+      then tics (g {gatesHealth = gatesHealth g - gatesDefaultDamage}) es
+        (e {enemyHealth = enemyHealth e - gatesDefaultDamage} : accum)
+      else tics g es (e:accum)
 
 -- Returns updated projectiles and enemies
-updateProjectiles :: Float -> [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
-updateProjectiles _ [] enemies = ([], enemies)  -- Base case: no projectiles
-updateProjectiles delta projectiles enemies =
+updateProjectiles :: [Projectile] -> [Enemy] -> ([Projectile], [Enemy])
+updateProjectiles [] enemies = ([], enemies)  -- Base case: no projectiles
+updateProjectiles projectiles enemies =
   foldl' processProjectile ([], enemies) projectiles
   where
     processProjectile (remainingProjs, currentEnemies) proj =
@@ -87,7 +101,8 @@ updateGame delta gs = case gameState gs of
 
   where
     -- Update projectiles and enemies with collision
-    (remainingProjectiles, updatedEnemies) = updateProjectiles delta (projectiles gs) (enemies gs)
+    (remainingProjectiles, shootedEnemies) = updateProjectiles (projectiles gs) (enemies gs)
+    (gates', updatedEnemies) = applyGatesDamage (gates gs) (shootedEnemies)
     
     -- Add coins for killed enemies
     coinsEarned = sum [enemyValue e | e <- updatedEnemies, enemyHealth e <= 0]
@@ -100,6 +115,7 @@ updateGame delta gs = case gameState gs of
       { enemies = updatedEnemies'
       , projectiles = filter hasNotReachedTarget (map (\x -> moveProjectile delta x) remainingProjectiles)
       , coins = coins gs + coinsEarned
+      , gates = gates'
       , timeSinceLastWave = timeSinceLastWave gs + delta
       , randomGen = newGen
       }

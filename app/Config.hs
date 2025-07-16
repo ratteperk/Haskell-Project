@@ -190,6 +190,9 @@ gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- per tic
 gatesDefaultHealth :: Float
 gatesDefaultHealth = 700
 
+gatesHitRadius :: Float
+gatesHitRadius = 30
+
 initialCoins :: Int
 initialCoins = 200
 

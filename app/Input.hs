@@ -129,8 +129,7 @@ tryBuildGates :: Position -> GameState -> GameState
 tryBuildGates pos gs =
   let
     newGates = Gates 
-      { gatesDamage = gatesDefaultDamage
-      , gatesHealth = gatesDefaultHealth
+      { gatesHealth = gatesDefaultHealth
       , gatesPosition = pos
       }
     isOccupied [] = False

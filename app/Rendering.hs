@@ -77,7 +77,9 @@ renderGates :: [Gates] -> Picture
 renderGates = pictures . map renderGate
   where
     renderGate gate = let pos = gatesPosition gate in
-      translate (fst pos) (snd pos) (colorRectangle magenta tileSize tileSize)
+      pictures [translate (fst pos) (snd pos) (colorRectangle magenta tileSize tileSize)
+        , translate (fst pos) (snd pos) (healthBar (gatesHealth gate) (gatesDefaultHealth))
+        ]
 
 renderEnemies :: [Enemy] -> Assets -> Picture
 renderEnemies ens assets = pictures (map renderEnemy ens)
@@ -94,14 +96,15 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
           StrongEnemy -> strongEnemyImg assets 
           Boss -> bossImg assets
 
-        healthBar current max =
-          let 
-            width = 30
-            ratio = current / max
-          in pictures
-            [ color red (rectangleWire width 5)  -- Background
-            , color green (rectangleSolid (width * ratio) 5)  -- Health
-            ]
+healthBar :: Float -> Float -> Picture
+healthBar current max =
+  let 
+    width = 30
+    ratio = current / max
+  in pictures
+    [ color red (rectangleWire width 5)  -- Background
+    , color green (rectangleSolid (width * ratio) 5)  -- Health
+    ]
 
 renderUI :: GameState -> Picture
 renderUI gs = pictures 
