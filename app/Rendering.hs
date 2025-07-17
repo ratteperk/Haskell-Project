@@ -21,15 +21,22 @@ renderProjectiles = pictures . map renderProjectile
         (x, y) = projPosition proj
       in translate x y (colorCircle yellow 5)
 
-renderButton :: UIElement -> Picture
-renderButton (Button pos size action label color) =
+renderButton :: GameState -> UIElement -> Picture
+renderButton gs but@(Button pos size action label color) =
   let 
     (x, y) = pos
     (w, h) = size
+    complete = case gameState gs of 
+      Menu -> if (notElem but (completedMaps gs)) 
+        then translate (x - w/2 + 15) (y - 70) (scale 0.1 0.1 (text "Not completed")) 
+        else translate (x - w/2 + 15) (y - 70) (scale 0.1 0.1 (text "completed"))
+      _ -> blank
   in pictures
     [ translate x y (colorRectangle color w h)
     , translate (x - w / 2 + 15) y (scale 0.1 0.1 (text label))
+    , complete
     ]
+
 
 renderGame :: GameState -> Assets -> Picture
 renderGame gs assets = case gameState gs of 
@@ -50,20 +57,18 @@ renderMap gs assets = pictures (concatMap renderRow (zip [0..] (tiles gs)))
     -- Tiles have to translated by half of its size since 
     -- we need to shift their center for proper conversion from 2D grid map coordinates
     renderRow (y, row) = map (translate (tileSize/2) (tileSize/2) . renderTile y) (zip [0..] row)
-    renderTile y (x, tile) = case tile of 
-      Road -> pictures (map (translate (fromIntegral x * tileSize) (fromIntegral y * tileSize)) 
-        [(scale 0.043 0.043 (roadBlockImg assets)), (rectangleWire tileSize tileSize)])
 
-      Buildable -> pictures (map (translate (fromIntegral x * tileSize) (fromIntegral y * tileSize)) 
-        [(scale 0.26 0.26 (buildableBlockImg assets)), (rectangleWire tileSize tileSize)])
-      _ ->
-        let 
-          pos = (fromIntegral x * tileSize, fromIntegral y * tileSize)
-          color = case tile of
-            Neutral -> neutralColor
-            Finish -> finishColor
-            Start -> startColor
-        in translate (fst pos) (snd pos) (colorRectangle color tileSize tileSize)
+    renderTile y (x, tile) = 
+      let pos = (fromIntegral x * tileSize, fromIntegral y * tileSize)
+          border = rectangleWire tileSize tileSize 
+          pic = case tile of 
+            Road -> roadBlockImg assets 
+            Buildable -> buildableBlockImg assets 
+            Neutral -> neutralBlockImg assets
+            Finish -> finishBlockImg assets
+            Start -> spawnBlockImg assets 
+      in translate (fst pos) (snd pos) (pictures [pic, border])
+
 
 renderTowers :: [Tower] -> Picture
 renderTowers = pictures . map renderTower
@@ -89,14 +94,14 @@ renderGates g assets = pictures $ map renderGate g
       in
         pictures 
           [ translate x y (gatesImg assets)
-          , translate x (y + 15) (healthBar (gatesHealth gate) (gatesDefaultHealth))
+          , translate x (y + 20) (healthBar (gatesHealth gate) (gatesDefaultHealth))
           ]
     
 renderEnemies :: [Enemy] -> Assets -> Picture
 renderEnemies ens assets = pictures (map renderEnemy ens)
   where
     renderEnemy enemy = pictures
-      [ translate x y (color (enemyColor (enemyType enemy)) (scale 0.03 0.03 enemyBody))  -- Enemy body
+      [ translate x y (color (enemyColor (enemyType enemy)) (enemyBody))  -- Enemy body
       , translate x (y - 20) (healthBar (enemyHealth enemy) (enemyMaxHealth enemy))
       ]
       where
@@ -125,7 +130,7 @@ renderUI gs = pictures
       Removing -> translate 0 (-280) (scale 0.15 0.15 (text "Click on tower that you want to remove"))
       GatesBuilding -> translate 0 (-280) (scale 0.15 0.15 (text "Click on road tile to place gates"))
       _ -> blank
-  ] ++ map renderButton gameButtons)
+  ] ++ map (renderButton gs) gameButtons)
 
 renderGameOver :: Picture
 renderGameOver = pictures 
@@ -134,7 +139,7 @@ renderGameOver = pictures
   ]
 
 renderGameMenu :: GameState -> Picture 
-renderGameMenu gs = pictures ((color white (rectangleSolid 2000 2000)) : (map renderButton menuButtons))
+renderGameMenu gs = pictures ((color white (rectangleSolid 2000 2000)) : (map (renderButton gs) menuButtons))
   
 colorRectangle :: Color -> Float -> Float -> Picture
 colorRectangle c w h = pictures [Color c (rectangleSolid w h), Color black (rectangleWire w h)]
@@ -157,14 +162,15 @@ loadAssets = do
     roadBlock <- loadPNG "assets/dirt-block.png"
     grassBlock <- loadPNG "assets/grass-block.png"
     gates <- loadPNG "assets/gates.png"
+    cobblestone <- loadPNG "assets/cobblestone.png"
     return Assets 
-      { basicEnemyImg = basicEnemy
-      , strongEnemyImg = strongEnemy
-      , bossImg = boss
-      , roadBlockImg = roadBlock
-      , buildableBlockImg = grassBlock
-      , spawnBlockImg = roadBlock
-      , finishBlockImg = roadBlock
-      , rockBlockImg = roadBlock
+      { basicEnemyImg = scale 0.03 0.03 basicEnemy
+      , strongEnemyImg = scale 0.03 0.03 strongEnemy
+      , bossImg = scale 0.035 0.035 boss
+      , roadBlockImg = scale 0.043 0.043 roadBlock
+      , buildableBlockImg = scale 0.26 0.26 grassBlock
+      , spawnBlockImg = color startColor (rectangleSolid tileSize tileSize)
+      , finishBlockImg = color finishColor (rectangleSolid tileSize tileSize)
+      , neutralBlockImg = translate (-0.2) 0.2 (scale 0.05 0.05 cobblestone)
       , gatesImg = scale 0.22 0.22 gates 
       }

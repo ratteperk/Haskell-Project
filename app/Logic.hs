@@ -67,6 +67,7 @@ updateProjectiles projectiles enemies =
 -- Main enemies spawn function
 spawnEnemies :: Float -> GameState -> GameState
 spawnEnemies dt gs
+  | currentWave gs == StopWave = initialState {completedMaps = getByUIElem gs}
   -- Spawning the next wave
   | timeSinceLastWave gs > waveSeparateTime && null (enemies gs) && null (waveEnemies gs) = prepareNextWave gs
   -- Spawning the next enemy
@@ -75,6 +76,14 @@ spawnEnemies dt gs
   | null (enemies gs) && null (waveEnemies gs) = gs {timeSinceLastWave = timeSinceLastWave gs + dt}
   -- Waiting for the next enemy in wave
   | otherwise = gs {spawnTimer = spawnTimer gs - dt}
+
+getByUIElem :: GameState -> [UIElement]
+getByUIElem gs = uiOfMap : (completedMaps gs)
+  where 
+    uiOfMap 
+      | (tiles gs) == sampleMap1 = menuButtons !! 0
+      | (tiles gs) == sampleMap2 = menuButtons !! 1
+      | otherwise = menuButtons !! 2
 
 -- Spawns the next enemy in wave
 spawnNextEnemy :: GameState -> GameState

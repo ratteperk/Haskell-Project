@@ -89,7 +89,7 @@ handleInput event gs = case gameState gs of
     _ -> gs
 
   GameOver -> case event of -- Gameover state
-    EventKey (SpecialKey KeySpace) Down _ _ -> (initialState (tiles gs)) {randomGen = randomGen gs}
+    EventKey (SpecialKey KeySpace) Down _ _ -> initialState {randomGen = randomGen gs, completedMaps = completedMaps gs}
     _ -> gs
 
   GameProcess -> case event of -- Gameplay

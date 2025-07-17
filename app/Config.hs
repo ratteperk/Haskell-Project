@@ -185,7 +185,7 @@ getNextWaveType BasicWave = FirstWave
 getNextWaveType FirstWave = SecondWave
 getNextWaveType SecondWave = ThirdWave
 getNextWaveType ThirdWave = LastWave 
-getNextWaveType LastWave = BasicWave
+getNextWaveType LastWave = StopWave
 
 waveSeparateTime :: Time -- time between waves
 waveSeparateTime = 5
@@ -298,21 +298,22 @@ startMap :: [[TileType]] -> GameState -> GameState
 startMap tilemap gs = gs {tiles = tilemap, gameState = GameProcess}
 
 
-initialState :: [[TileType]] -> GameState
-initialState mapTiles = GameState
+initialState :: GameState
+initialState = GameState
   { towers = []
   , gates = []
   , enemies = []
   , projectiles = []
   , coins = initialCoins
   , buildMode = NotBuilding
-  , tiles = mapTiles
+  , tiles = []
   , gameState = Menu
   , timeSinceLastWave = 0
   , randomGen = mkStdGen initGen
   , currentWave = BasicWave      
   , waveEnemies = []
   , spawnTimer = 0
+  , completedMaps = []
   }
 
 menuButtons :: [UIElement]

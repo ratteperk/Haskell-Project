@@ -78,6 +78,7 @@ data GameState = GameState
   , currentWave :: WaveType
   , waveEnemies :: [Enemy]
   , spawnTimer :: Time
+  , completedMaps :: [UIElement]
   }
 
 data UIElement = Button
@@ -88,12 +89,16 @@ data UIElement = Button
   , btnColor :: Color
   }
 
+instance Eq UIElement where 
+  a == b = ( btnPosition a == btnPosition b)
+
 data WaveType 
   = BasicWave 
   | FirstWave
   | SecondWave
   | ThirdWave
   | LastWave
+  | StopWave
   deriving (Eq, Show)
 
 data Assets = Assets
@@ -104,6 +109,6 @@ data Assets = Assets
     , buildableBlockImg :: Picture
     , spawnBlockImg :: Picture 
     , finishBlockImg :: Picture
-    , rockBlockImg :: Picture
+    , neutralBlockImg :: Picture
     , gatesImg :: Picture
     }
