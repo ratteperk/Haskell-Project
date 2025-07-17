@@ -57,7 +57,7 @@ data Enemy = Enemy
   , enemyMaxHealth :: Health
   , enemySpeed :: Speed -- Pixels per second
   , enemyPath :: [Position] -- List of points that enemy traverses (centers of road tiles)
-  , enemyCurrentTarget :: Int -- Index of the point that enemy is walking to
+  , enemyCurrentTarget :: Int -- Index of the path point that enemy is walking to
   , enemyValue :: Coins -- Amount of coins that that enemy leaves after dying
   } deriving (Eq)
 

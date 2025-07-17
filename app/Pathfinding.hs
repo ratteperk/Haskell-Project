@@ -83,10 +83,5 @@ findRoad gen tiles current path = findNear current path
       | let pos = posToTile x in getTile tiles pos == Just Finish = x 
       | otherwise = getFinish xs
 
-
-lastEl :: [a] -> a
-lastEl [x] = x
-lastEl (x:xs) = lastEl xs
-
 generateRandom :: Int -> Int -> StdGen -> (Int, StdGen) 
 generateRandom l r gen = (randomR (l, r) gen)

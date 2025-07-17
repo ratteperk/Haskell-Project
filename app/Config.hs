@@ -1,6 +1,6 @@
 module Config where
 -- This file contains all necessary constants (excluding rendering related configuration)
--- Most of the names are self-explanatory
+-- Most of the contants and functions names are self-explanatory
 import System.Random (randomR, mkStdGen)
 import Graphics.Gloss.Data.Color
 import Types
@@ -30,7 +30,7 @@ basicEnemySpeed = 50
 strongEnemySpeed = 30
 bossSpeed = 20
 
-basicEnemyValue, strongEnemyValue, bossValue :: Int
+basicEnemyValue, strongEnemyValue, bossValue :: Coins
 basicEnemyValue = 20
 strongEnemyValue = 40
 bossValue = 200
@@ -94,7 +94,7 @@ lwEnemies = swEnemies ++ swEnemies ++ [boss]
 
 -- Projectiles section
 
-projectileSpeed :: Float
+projectileSpeed :: Speed
 projectileSpeed = 900
 
 hitRadius :: Float
@@ -102,12 +102,12 @@ hitRadius = 30  -- Radius for projectile collision detection
 
 -- Tower section
 
-cannonTowerCost, slowTowerCost, splashTowerCost :: Int
+cannonTowerCost, slowTowerCost, splashTowerCost :: Coins
 cannonTowerCost = 50
 slowTowerCost = 75
 splashTowerCost = 100
 
-getTowerCost :: TowerType -> Int
+getTowerCost :: TowerType -> Coins
 getTowerCost CannonTower = cannonTowerCost
 getTowerCost SlowTower = slowTowerCost
 getTowerCost SplashTower = splashTowerCost
@@ -192,7 +192,7 @@ waveSeparateTime = 5
 
 -- Gates section
 
-gatesCost :: Int
+gatesCost :: Coins
 gatesCost = 300
 
 gatesDefaultDamage :: Damage
@@ -206,7 +206,7 @@ gatesHitRadius = 30
 
 -- Game settings section
 
-initialCoins :: Int
+initialCoins :: Coins
 initialCoins = 200
 
 -- Just to inititalize initialState generator field (anyway, in the Main generator is created in runtime) 

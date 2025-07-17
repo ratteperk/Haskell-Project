@@ -7,7 +7,10 @@ import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
 import Graphics.Gloss.Juicy (loadJuicyPNG)
 
-translateGameZone :: Picture -> Picture 
+-- Most of the contants and functions names are self-explanatory
+
+-- Function is used for translation entire game field
+translateGameZone :: Picture -> Picture
 translateGameZone pic = translate (- xOffset) (- yOffset) pic
 
 renderProjectiles :: [Projectile] -> Picture
@@ -104,7 +107,7 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
           StrongEnemy -> strongEnemyImg assets 
           Boss -> bossImg assets
 
-healthBar :: Float -> Float -> Picture
+healthBar :: Health -> Health -> Picture
 healthBar current max =
   let 
     width = 30

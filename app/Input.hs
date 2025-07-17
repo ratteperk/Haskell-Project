@@ -130,7 +130,7 @@ handleInput event gs = case gameState gs of
         -- Checks whether click was performed on some button:
         checkButton = case getClickedButton mousePos gs of
           Just button -> btnAction button gs
-          Nothing -> gs
+          Nothing -> gs {buildMode = NotBuilding}
 
     _ -> gs
 
