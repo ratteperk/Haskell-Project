@@ -22,9 +22,12 @@ findStart tiles gen =
     [] -> error "No start tile found" 
     arr -> tileToPos (arr !! fst (generateRandom 0 (length arr - 1) gen))
     
+-- Function analyze all possible ways to finish and select random one
 findRoad :: StdGen -> [[TileType]] -> Position -> [Position] -> [Position]
 findRoad gen tiles current path = findNear current path
   where 
+
+    -- finds near Road tiles, if there is no ambiguity, select it, else checks for finish in every way and select random of such ways
     findNear prev path = let (x, y) = posToTile prev in
       case [tileToPos (y', x') | (x', y') <- [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)],
                case getTile tiles (x', y') of 
@@ -37,6 +40,7 @@ findRoad gen tiles current path = findNear current path
 
     goToFinish next = isLeadToFinish next (path ++ [current])
 
+    --  function checks is there a possibility to reach finish, if yes - True, else - False
     isLeadToFinish pos path' =
       let visited = path' ++ [pos]
           (x, y) = posToTile pos
@@ -49,6 +53,7 @@ findRoad gen tiles current path = findNear current path
           unvisited = filter (`notElem` visited) validMoves
       in any (canReachFinish visited) unvisited
 
+    -- helper function for "isLeadToFinish"
     canReachFinish :: [Position] -> Position -> Bool
     canReachFinish visited current' 
       | isFinish [current'] = True
@@ -66,6 +71,8 @@ findRoad gen tiles current path = findNear current path
           [] -> False
           el -> any (canReachFinish newVisited) el
 
+    -- Function checks for Finish in near tiles, if yes - returns all path from start to finish,
+    -- if not - calls "findRoad" to continue searching process
     chooseCorrect [] = error ("No correct road tile" ++ show (map posToTile path) ++ show (posToTile current))
     chooseCorrect nearRoad
       | isFinish nearRoad = path ++ [current, getFinish nearRoad]
