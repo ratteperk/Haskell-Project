@@ -105,4 +105,5 @@ data Assets = Assets
     , spawnBlockImg :: Picture 
     , finishBlockImg :: Picture
     , rockBlockImg :: Picture
+    , gatesImg :: Picture
     }

@@ -193,7 +193,7 @@ waveSeparateTime = 5
 -- Gates section
 
 gatesCost :: Coins
-gatesCost = 300
+gatesCost = 30
 
 gatesDefaultDamage :: Damage
 gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- damage per frame

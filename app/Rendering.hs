@@ -36,7 +36,7 @@ renderGame gs assets = case gameState gs of
   Menu -> renderGameMenu gs
   _ -> pictures
     [ translateGameZone (renderMap gs assets)
-    , translateGameZone (renderGates (gates gs))
+    , translateGameZone (renderGates (gates gs) assets)
     , translateGameZone (renderTowers (towers gs))
     , translateGameZone (renderEnemies (enemies gs) assets)
     , translateGameZone (renderProjectiles (projectiles gs))
@@ -78,8 +78,8 @@ renderTowers = pictures . map renderTower
         ]
       where pos = towerPosition tower
 
-renderGates :: [Gates] -> Picture
-renderGates = pictures . map renderGate
+renderGates :: [Gates] -> Assets -> Picture
+renderGates g assets = pictures $ map renderGate g
   where
     renderGate gate = 
       let 
@@ -88,8 +88,8 @@ renderGates = pictures . map renderGate
         y = snd pos
       in
         pictures 
-          [ translate x y (colorRectangle magenta tileSize tileSize)
-          , translate x y (healthBar (gatesHealth gate) (gatesDefaultHealth))
+          [ translate x y (gatesImg assets)
+          , translate x (y + 15) (healthBar (gatesHealth gate) (gatesDefaultHealth))
           ]
     
 renderEnemies :: [Enemy] -> Assets -> Picture
@@ -156,6 +156,7 @@ loadAssets = do
     boss <- loadPNG "assets/boss.png"
     roadBlock <- loadPNG "assets/dirt-block.png"
     grassBlock <- loadPNG "assets/grass-block.png"
+    gates <- loadPNG "assets/gates.png"
     return Assets 
       { basicEnemyImg = basicEnemy
       , strongEnemyImg = strongEnemy
@@ -165,4 +166,5 @@ loadAssets = do
       , spawnBlockImg = roadBlock
       , finishBlockImg = roadBlock
       , rockBlockImg = roadBlock
+      , gatesImg = scale 0.22 0.22 gates 
       }
