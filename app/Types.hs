@@ -116,4 +116,5 @@ data Assets = Assets
     , finishBlockImg :: Picture
     , neutralBlockImg :: Picture
     , gatesImg :: Picture
+    , coldyImg :: Picture
     }

@@ -112,7 +112,7 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
           BasicEnemy -> basicEnemyImg assets
           StrongEnemy -> case enemyEffect enemy of 
             None -> strongEnemyImg assets 
-            Freeze -> color blue (circleSolid (tileSize/2 - 5))
+            Freeze -> coldyImg assets
           Boss -> bossImg assets
 
 healthBar :: Health -> Health -> Picture
@@ -166,14 +166,16 @@ loadAssets = do
     grassBlock <- loadPNG "assets/grass-block.png"
     gates <- loadPNG "assets/gates.png"
     cobblestone <- loadPNG "assets/cobblestone.png"
+    coldy <- loadPNG "assets/coldy.png"
     return Assets 
       { basicEnemyImg = scale 0.03 0.03 basicEnemy
       , strongEnemyImg = scale 0.03 0.03 strongEnemy
-      , bossImg = scale 0.035 0.035 boss
+      , bossImg = scale 0.05 0.05 boss
       , roadBlockImg = scale 0.043 0.043 roadBlock
       , buildableBlockImg = scale 0.26 0.26 grassBlock
       , spawnBlockImg = color startColor (rectangleSolid tileSize tileSize)
       , finishBlockImg = color finishColor (rectangleSolid tileSize tileSize)
       , neutralBlockImg = translate (-0.2) 0.2 (scale 0.05 0.05 cobblestone)
       , gatesImg = scale 0.22 0.22 gates 
+      , coldyImg = scale 0.04 0.04 coldy
       }
