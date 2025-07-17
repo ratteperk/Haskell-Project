@@ -1,5 +1,16 @@
 # Tower Defense Game
 
+---
+## HyperLinks
+
+| 🔗 Link | Description |
+|----------|----------|
+| [License](./LICENSE) | License for project |
+| [Dependencies](./Haskell-Project.cabal) | .cabal file with dependencies |
+| [Assets](./assets/) | Images used in game |
+
+---
+
 ## Contributors
 
 - Stepan Peredereev

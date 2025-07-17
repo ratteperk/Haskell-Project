@@ -111,7 +111,7 @@ handleInput event gs = case gameState gs of
             then gs {
                 coins = case getPointingTower (towers gs) of
                   Nothing -> coins gs
-                  Just tower -> div (getTowerCost (towerType tower)) 2 + coins gs,
+                  Just tower -> (getTowerCost (towerType tower)) `div` 2 + coins gs,
                 towers =
                   filter (\t -> towerPosition t /= (tileCenterPosition (posToTile mousePosOffset))) (towers gs),
                 buildMode = NotBuilding
