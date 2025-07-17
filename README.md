@@ -24,6 +24,8 @@ cabal run
 - Then you have a time to place towers that will defend a path
 - Enemies will appear as waves (from small to big),
 - The last wave is a boss that have a lot of HP
+- After beating the boss you win and your progress in this map is saved
+- You can choose another map to challenge yourself
 
 ---
 
