@@ -6,6 +6,7 @@ import Config
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.IO.Game (Event(..), Key(..), MouseButton(..), KeyState(..))
 import Graphics.Gloss.Juicy (loadJuicyPNG)
+import System.Random (randomR)
 
 -- Most of the contants and functions names are self-explanatory
 
@@ -43,7 +44,7 @@ renderGame gs assets = case gameState gs of
   Menu -> renderGameMenu gs
   _ -> pictures
     [ translateGameZone (renderMap gs assets)
-    , translateGameZone (renderGates (gates gs) assets)
+    , translateGameZone (renderGates (gates gs) assets gs)
     , translateGameZone (renderTowers (towers gs))
     , translateGameZone (renderEnemies (enemies gs) assets)
     , translateGameZone (renderProjectiles (projectiles gs))
@@ -83,8 +84,8 @@ renderTowers = pictures . map renderTower
         ]
       where pos = towerPosition tower
 
-renderGates :: [Gates] -> Assets -> Picture
-renderGates g assets = pictures $ map renderGate g
+renderGates :: [Gates] -> Assets -> GameState -> Picture
+renderGates g assets gs = pictures $ map renderGate g
   where
     renderGate gate = 
       let 
@@ -93,7 +94,7 @@ renderGates g assets = pictures $ map renderGate g
         y = snd pos
       in
         pictures 
-          [ translate x y (gatesImg assets)
+          [ translate x y (rotate (fst (randomR (0, 360) (randomGen gs))) (gatesImg assets))
           , translate x (y + 20) (healthBar (gatesHealth gate) (gatesDefaultHealth))
           ]
     
