@@ -201,7 +201,9 @@ reachedNextPoint e = getDistanceToNextPoint e <= 2 -- 2-pixels precision is need
 
 -- Performs attack of towers
 towersAttack :: Float -> GameState -> GameState
-towersAttack delta gs = foldl' (attackWithTower delta) gs (towers gs)
+towersAttack delta gs = 
+  let towers' = map (applyEffects gs) (towers gs)
+  in  foldl' (attackWithTower delta) (gs {towers = towers'}) towers'
   where
     attackWithTower delta game tower
       | towerTimeSinceLastShot tower >= towerCooldown tower =
@@ -218,6 +220,25 @@ towersAttack delta gs = foldl' (attackWithTower delta) gs (towers gs)
       | otherwise = 
         game {towers = tower {towerTimeSinceLastShot = towerTimeSinceLastShot tower + delta} 
           : filter (/= tower) (towers game)}
+
+-- Function applies an effect fron enemy to tower
+applyEffects :: GameState -> Tower -> Tower
+applyEffects gs tower = case enemyEffectsExist (enemies gs) of
+  [] -> tower {towerCooldown = getTowerCooldown (towerType tower)}
+  arr -> 
+    if any (inRange) arr  
+    then tower {towerCooldown = 1.6 * (getTowerCooldown (towerType tower))} 
+    else tower {towerCooldown = getTowerCooldown (towerType tower)}
+
+  where 
+    inRange :: Enemy -> Bool
+    inRange en
+      | distance (enemyPosition en) (towerPosition tower) <= enemyRange en = True
+      | otherwise = False
+
+    enemyEffectsExist :: [Enemy] -> [Enemy]
+    enemyEffectsExist ens = filter (\x -> enemyEffect x /= None) ens
+
 
 -- Find the closest to finish enemy in the scope
 findTarget :: Tower -> [Enemy] -> Maybe Position

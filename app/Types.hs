@@ -27,6 +27,9 @@ data EnemyType = BasicEnemy | StrongEnemy | Boss
 data States = Menu | GameProcess | GameOver
   deriving (Eq, Show)
 
+data EnemyEffect = None | Freeze
+  deriving (Eq, Show)
+
 data Projectile = Projectile
   { projPosition :: Position
   , projType :: TowerType
@@ -59,7 +62,9 @@ data Enemy = Enemy
   , enemyPath :: [Position] -- List of points that enemy traverses (centers of road tiles)
   , enemyCurrentTarget :: Int -- Index of the path point that enemy is walking to
   , enemyValue :: Coins -- Amount of coins that that enemy leaves after dying
-  } deriving (Eq)
+  , enemyRange :: Radius
+  , enemyEffect :: EnemyEffect
+  } deriving Eq
 
 data BuildMode = NotBuilding | Building TowerType | Removing | GatesBuilding
   deriving (Eq, Show)

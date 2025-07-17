@@ -53,6 +53,8 @@ basicEnemy =  Enemy
   , enemySpeed = basicEnemySpeed
   , enemyPath = startPath
   , enemyCurrentTarget = 0
+  , enemyRange = 0
+  , enemyEffect = None
   }
 
 strongEnemy :: Enemy 
@@ -65,6 +67,8 @@ strongEnemy = Enemy
   , enemySpeed = strongEnemySpeed
   , enemyPath = startPath
   , enemyCurrentTarget = 0
+  , enemyRange = 0
+  , enemyEffect = None
   }
 
 boss :: Enemy 
@@ -77,7 +81,12 @@ boss = Enemy
   , enemySpeed = bossSpeed
   , enemyPath = startPath
   , enemyCurrentTarget = 0
+  , enemyRange = 0
+  , enemyEffect = None
   }
+
+coldy :: Enemy 
+coldy = strongEnemy {enemyRange = 100, enemyEffect = Freeze}
 
 -- Predefined enemy waves
 bwEnemies, fwEnemies, swEnemies, lwEnemies :: [Enemy]
@@ -87,7 +96,7 @@ fwEnemies = [basicEnemy, basicEnemy, basicEnemy]
 
 swEnemies = [strongEnemy, strongEnemy, strongEnemy]
 
-twEnemies = fwEnemies ++ [strongEnemy, basicEnemy, strongEnemy, basicEnemy] ++ swEnemies
+twEnemies = fwEnemies ++ [coldy, basicEnemy, coldy, basicEnemy, coldy] ++ swEnemies
 
 lwEnemies = swEnemies ++ swEnemies ++ [boss]
 
@@ -111,6 +120,11 @@ getTowerCost :: TowerType -> Coins
 getTowerCost CannonTower = cannonTowerCost
 getTowerCost SlowTower = slowTowerCost
 getTowerCost SplashTower = splashTowerCost
+
+getTowerCooldown :: TowerType -> Time
+getTowerCooldown CannonTower = cannonTowerCooldown
+getTowerCooldown SlowTower = slowTowerCooldown
+getTowerCooldown SplashTower = splashTowerCooldown
 
 cannonTowerDamage, slowTowerDamage, splashTowerDamage :: Damage
 cannonTowerDamage = 15
@@ -193,7 +207,7 @@ waveSeparateTime = 5
 -- Gates section
 
 gatesCost :: Coins
-gatesCost = 30
+gatesCost = 250
 
 gatesDefaultDamage :: Damage
 gatesDefaultDamage = fromIntegral 40 / fromIntegral fps -- damage per frame
