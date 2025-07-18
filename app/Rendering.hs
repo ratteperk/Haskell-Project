@@ -112,7 +112,7 @@ renderEnemies ens assets = pictures (map renderEnemy ens)
           BasicEnemy -> basicEnemyImg assets
           StrongEnemy -> case enemyEffect enemy of 
             None -> strongEnemyImg assets 
-            Freeze -> coldyImg assets
+            Freeze -> pictures [coldyImg assets, colorCircle (withAlpha 0.1 blue) 100]
           Boss -> bossImg assets
 
 healthBar :: Health -> Health -> Picture
